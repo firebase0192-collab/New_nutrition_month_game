@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutrition Month Game 🥦</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+ 
+  :root {
+    --green: #2d8b4e;
+    --green-light: #4caf70;
+    --green-dark: #1a5c32;
+    --yellow: #f9c22e;
+    --orange: #f97316;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --teal: #14b8a6;
+    --cream: #fef9ee;
+    --white: #ffffff;
+  }
+ 
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+  body {
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: #1a5c32;
+  }
+ 
+  /* ===== ANIMATIONS ===== */
+  @keyframes float { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-12px);} }
+  @keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(249,194,46,0.4);} 50%{box-shadow:0 0 40px rgba(249,194,46,0.9);} }
+  @keyframes bounce-in { 0%{transform:scale(0) rotate(-10deg);opacity:0;} 60%{transform:scale(1.15) rotate(3deg);} 80%{transform:scale(0.95) rotate(-1deg);} 100%{transform:scale(1) rotate(0deg);opacity:1;} }
+  @keyframes slide-up { from{transform:translateY(60px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes slide-down { from{transform:translateY(-40px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes wiggle { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-5deg);} 75%{transform:rotate(5deg);} }
+  @keyframes confetti-fall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(720deg);opacity:0;} }
+  @keyframes timer-pulse { 0%,100%{transform:scale(1);color:#2d8b4e;} 50%{transform:scale(1.1);color:#ef4444;} }
+  @keyframes star-pop { 0%{transform:scale(0) rotate(0deg);opacity:0;} 50%{transform:scale(1.3) rotate(180deg);opacity:1;} 100%{transform:scale(1) rotate(360deg);opacity:1;} }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-8px);} 40%{transform:translateX(8px);} 60%{transform:translateX(-5px);} 80%{transform:translateX(5px);} }
+  @keyframes flash-screen { 0%,100%{background-color:transparent;} 50%{background-color:rgba(249,194,46,0.5);} }
+  @keyframes rsg-pop { 0%{transform:scale(0.3);opacity:0;} 50%{transform:scale(1.4);opacity:1;} 100%{transform:scale(1);opacity:1;} }
+ 
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+ 
+  /* ===== HOME SCREEN ===== */
+  #home { background: linear-gradient(135deg, #1a5c32 0%, #2d8b4e 40%, #1a5c32 100%); position: relative; overflow: hidden; align-items: center; justify-content: center; padding: 20px; }
+  .food-particle { position: absolute; font-size: 2rem; animation: float 3s ease-in-out infinite; opacity: 0.35; pointer-events: none; user-select: none; }
+  .home-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.04); }
+  .home-content { position: relative; z-index: 2; text-align: center; max-width: 700px; width: 100%; }
+  .home-badge { display: inline-block; background: var(--yellow); color: var(--green-dark); font-weight: 900; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; padding: 6px 20px; border-radius: 50px; margin-bottom: 16px; animation: slide-down 0.6s ease; }
+  .home-title { font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 7vw, 5rem); color: var(--white); line-height: 1; text-shadow: 0 4px 20px rgba(0,0,0,0.4); animation: bounce-in 0.8s ease 0.2s both; margin-bottom: 4px; }
+  .home-title span { color: var(--yellow); }
+  .home-subtitle { font-size: clamp(1rem, 3vw, 1.4rem); color: rgba(255,255,255,0.85); font-weight: 700; margin-bottom: 8px; animation: slide-up 0.7s ease 0.4s both; }
+  .home-tagline { font-size: 0.95rem; color: rgba(255,255,255,0.6); margin-bottom: 30px; animation: slide-up 0.7s ease 0.5s both; font-style: italic; }
+  .player-welcome { color: white; font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; background: rgba(255,255,255,0.12); display:inline-block; padding:8px 24px; border-radius:50px; }
+  .player-welcome span { color: var(--yellow); }
+ 
+  .game-cards { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; animation: slide-up 0.7s ease 0.6s both; }
+  .game-card { background: var(--white); border-radius: 24px; padding: 28px 22px; width: 190px; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; box-shadow: 0 8px 30px rgba(0,0,0,0.25); border: 3px solid transparent; position: relative; overflow: hidden; }
+  .game-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: var(--card-accent, var(--green)); border-radius: 24px 24px 0 0; }
+  .game-card:hover { transform: translateY(-10px) scale(1.03); box-shadow: 0 20px 50px rgba(0,0,0,0.35); border-color: var(--card-accent, var(--green)); }
+  .card-icon { font-size: 3rem; margin-bottom: 12px; display: block; animation: float 2.5s ease-in-out infinite; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #1a1a1a; margin-bottom: 6px; }
+  .card-desc { font-size: 0.78rem; color: #666; line-height: 1.4; }
+  .card-play-btn { margin-top: 14px; display: inline-block; background: var(--card-accent, var(--green)); color: white; padding: 6px 18px; border-radius: 50px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px; }
+ 
+  /* ===== NAME ENTRY SCREEN ===== */
+  #name-entry { background: linear-gradient(135deg, #1a5c32 0%, #2d8b4e 60%, #1a5c32 100%); align-items: center; justify-content: center; padding: 20px; }
+  .name-card { background: white; border-radius: 28px; padding: 44px 36px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.35); animation: bounce-in 0.6s ease; }
+  .name-card .emoji-row { font-size: 2.5rem; margin-bottom: 10px; }
+  .name-card h1 { font-family: 'Fredoka One', cursive; color: var(--green-dark); font-size: 1.7rem; margin-bottom: 8px; }
+  .name-card p { color: #777; font-size: 0.9rem; margin-bottom: 22px; font-weight: 600; }
+  .name-input { width: 100%; padding: 16px 20px; border: 3px solid #e5e7eb; border-radius: 16px; font-size: 1.1rem; font-family: 'Nunito', sans-serif; font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; margin-bottom: 18px; }
+  .name-input:focus { border-color: var(--green); }
+ 
+  /* ===== COMMON GAME STYLES ===== */
+  .game-header { background: var(--green-dark); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.3); flex-wrap: wrap; gap: 10px; }
+  .game-header-title { font-family: 'Fredoka One', cursive; color: var(--yellow); font-size: 1.4rem; }
+  .game-header-sub { color: rgba(255,255,255,0.7); font-size: 0.8rem; }
+  .btn-home { background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 8px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif; }
+  .btn-home:hover { background: rgba(255,255,255,0.25); border-color: white; }
+  .btn-reset { background: rgba(239,68,68,0.25); border: 2px solid rgba(239,68,68,0.5); color: white; padding: 8px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif; }
+  .btn-reset:hover { background: rgba(239,68,68,0.45); border-color: #fff; }
+ 
+  .game-body { flex: 1; background: linear-gradient(160deg, #f0fdf4 0%, #dcfce7 100%); padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+ 
+  .timer-ring-wrap { display: flex; align-items: center; justify-content: center; gap: 10px; background: white; border-radius: 20px; padding: 10px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .timer-label { font-size: 0.85rem; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+  .timer-count { font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: var(--green); min-width: 60px; text-align: center; transition: color 0.3s; }
+  .timer-count.urgent { color: var(--red); animation: timer-pulse 0.5s ease infinite; }
+ 
+  .big-btn { background: var(--green); color: white; border: none; padding: 14px 40px; border-radius: 50px; font-size: 1.1rem; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.2s; box-shadow: 0 6px 20px rgba(45,139,78,0.4); letter-spacing: 0.5px; }
+  .big-btn:hover { background: var(--green-light); transform: translateY(-3px); box-shadow: 0 10px 28px rgba(45,139,78,0.5); }
+  .big-btn:active { transform: translateY(0); }
+  .big-btn.yellow { background: var(--yellow); color: var(--green-dark); box-shadow: 0 6px 20px rgba(249,194,46,0.4); }
+  .big-btn.yellow:hover { background: #fbbf24; box-shadow: 0 10px 28px rgba(249,194,46,0.6); }
+  .big-btn.red { background: var(--red); box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
+  .big-btn.blue { background: var(--blue); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+  .big-btn.gray { background: #9ca3af; box-shadow: 0 6px 20px rgba(156,163,175,0.4); }
+  .big-btn.purple { background: var(--purple); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+  .big-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+ 
+  .confetti-piece { position: fixed; width: 10px; height: 10px; top: -20px; border-radius: 2px; pointer-events: none; z-index: 9999; animation: confetti-fall linear forwards; }
+ 
+  /* ===== RESULT OVERLAY ===== */
+  .result-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; backdrop-filter: blur(4px); }
+  .result-card { background: white; border-radius: 28px; padding: 36px 32px; max-width: 460px; width: 100%; text-align: center; animation: bounce-in 0.5s ease; box-shadow: 0 25px 80px rgba(0,0,0,0.4); }
+  .result-icon { font-size: 4rem; display: block; margin-bottom: 10px; animation: star-pop 0.6s ease; }
+  .result-title { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 6px; }
+  .result-title.correct { color: var(--green); }
+  .result-title.wrong { color: var(--red); }
+  .result-title.neutral { color: #888; }
+  .result-sub { font-size: 1rem; color: #666; margin-bottom: 16px; font-weight: 700; }
+  .result-question { background: #f8fafb; border-radius: 14px; padding: 16px; font-size: 0.95rem; color: #333; margin-bottom: 16px; line-height: 1.5; font-weight: 600; }
+  .result-answer { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-radius: 14px; padding: 14px; margin-bottom: 20px; }
+  .result-answer strong { display: block; font-size: 1.3rem; font-family: 'Fredoka One', cursive; color: var(--green); margin-bottom: 4px; }
+  .result-answer .detail { font-size: 0.85rem; color: #555; line-height: 1.4; }
+  .result-points { display: inline-block; background: var(--yellow); color: var(--green-dark); font-weight: 900; font-size: 1rem; padding: 8px 24px; border-radius: 50px; margin-bottom: 20px; animation: pulse-glow 1.5s ease infinite; }
+ 
+  /* Confirm modal */
+  .confirm-card { background: white; border-radius: 24px; padding: 32px 28px; max-width: 380px; width: 100%; text-align: center; animation: bounce-in 0.4s ease; box-shadow: 0 25px 80px rgba(0,0,0,0.4); }
+  .confirm-card .c-icon { font-size: 3rem; margin-bottom: 8px; }
+  .confirm-card h3 { font-family: 'Fredoka One', cursive; color: var(--green-dark); font-size: 1.3rem; margin-bottom: 18px; line-height: 1.4; }
+  .confirm-card h3 span { color: var(--orange); }
+  .confirm-btns { display: flex; gap: 12px; justify-content: center; }
+ 
+  /* Ready Set Go overlay */
+  .rsg-overlay { position: fixed; inset: 0; background: rgba(26,92,50,0.92); display:none; align-items:center; justify-content:center; z-index: 600; }
+  .rsg-text { font-family: 'Fredoka One', cursive; font-size: 4rem; color: white; animation: rsg-pop 0.5s ease; text-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+  .rsg-text.go { color: var(--yellow); font-size: 5rem; }
+ 
+  /* ============================ SCRAMBLE WORD GAME ============================ */
+  #scramble { background: linear-gradient(160deg, #1a5c32, #2d8b4e); }
+  .scramble-board-screen { background: linear-gradient(160deg, #1a5c32, #2d8b4e); }
+ 
+  .instructions-card { background: white; border-radius: 28px; padding: 36px; max-width: 600px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.1); animation: slide-up 0.5s ease; }
+  .instructions-title { font-family: 'Fredoka One', cursive; font-size: 1.9rem; color: var(--green); margin-bottom: 18px; text-align: center; }
+  .instruction-step { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 14px; }
+  .step-num { background: var(--green); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+  .step-text { font-size: 0.93rem; color: #444; font-weight: 600; line-height: 1.5; padding-top: 4px; }
+  .timing-pill-row { display:flex; gap:8px; flex-wrap:wrap; margin-top: 6px; }
+  .timing-pill { font-size: 0.78rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; }
+  .timing-pill.easy { background: #d1fae5; color: #047857; }
+  .timing-pill.normal { background: #fef3c7; color: #92400e; }
+  .timing-pill.hard { background: #fee2e2; color: #b91c1c; }
+ 
+  .difficulty-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; max-width: 620px; width: 100%; animation: slide-up 0.5s ease; }
+  .diff-card { background: white; border-radius: 22px; padding: 26px 22px; width: 170px; text-align: center; cursor: pointer; transition: all 0.25s; box-shadow: 0 8px 26px rgba(0,0,0,0.18); border: 3px solid transparent; }
+  .diff-card:hover { transform: translateY(-8px) scale(1.04); box-shadow: 0 16px 40px rgba(0,0,0,0.28); }
+  .diff-card.easy { border-color: #34d399; } .diff-card.easy:hover { background: #ecfdf5; }
+  .diff-card.normal { border-color: #fbbf24; } .diff-card.normal:hover { background: #fffbeb; }
+  .diff-card.hard { border-color: #f87171; } .diff-card.hard:hover { background: #fef2f2; }
+  .diff-card .d-icon { font-size: 2.2rem; margin-bottom: 8px; }
+  .diff-card .d-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 4px; }
+  .diff-card .d-sub { font-size: 0.78rem; color: #888; font-weight: 700; }
+  .diff-card .d-streak { margin-top:10px; font-size: 0.72rem; font-weight: 800; color: var(--green); }
+  .diff-card.locked { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+ 
+  .box-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; max-width: 560px; width: 100%; animation: slide-up 0.5s ease; }
+  .box-btn { aspect-ratio: 1; border-radius: 20px; border: 3px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-family: 'Fredoka One', cursive; font-size: 1.8rem; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+  .box-btn:hover:not(.used) { transform: scale(1.08) rotate(2deg); background: rgba(255,255,255,0.25); border-color: var(--yellow); box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: wiggle 0.4s ease; }
+  .box-btn.used { opacity: 0.3; cursor: not-allowed; pointer-events: none; transform: scale(0.9); }
+  .box-btn .box-num { font-size: 0.9rem; position: absolute; top: 6px; left: 10px; opacity: 0.7; }
+ 
+  .scramble-board { background: white; border-radius: 28px; padding: 32px; max-width: 540px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.15); animation: bounce-in 0.5s ease; }
+  .round-label { display: inline-block; background: var(--green); color: white; font-weight: 800; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; padding: 5px 18px; border-radius: 50px; margin-bottom: 14px; }
+  .scramble-instruction { font-size: 0.9rem; color: #888; margin-bottom: 10px; font-weight: 600; }
+  .scramble-word { font-family: 'Fredoka One', cursive; font-size: clamp(2.2rem, 6vw, 4rem); color: var(--green-dark); letter-spacing: 6px; margin-bottom: 14px; line-height: 1; background: linear-gradient(135deg, var(--green-dark), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; word-break: break-all; }
+  .scramble-hint { background: #f0fdf4; border-radius: 12px; padding: 10px 16px; font-size: 0.9rem; color: #555; margin-bottom: 6px; border: 1px solid #bbf7d0; }
+  .scramble-hint strong { color: var(--green); }
+ 
+  .answer-card { background: white; border-radius: 28px; padding: 36px 32px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.15); animation: bounce-in 0.5s ease; }
+  .answer-card .answer-word { font-family: 'Fredoka One', cursive; font-size: 3.2rem; color: var(--green); margin: 16px 0; letter-spacing: 4px; word-break: break-all; }
+ 
+  .final-score-card { background: white; border-radius: 28px; padding: 40px 32px; max-width: 460px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: bounce-in 0.6s ease; position: relative; }
+  .final-flash { position: fixed; inset:0; pointer-events:none; z-index: 50; animation: flash-screen 0.6s ease 3; }
+  .final-score-num { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--yellow); -webkit-text-stroke: 2px var(--green-dark); margin: 10px 0; }
+  .final-player-name { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--green-dark); }
+ 
+  /* ============================ TRUE OR FALSE GAME ============================ */
+  #tof { background: #f0fdf4; }
+  .tof-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 560px; width: 100%; animation: slide-up 0.5s ease; }
+  .tof-box { aspect-ratio: 1; border-radius: 16px; background: var(--green); color: white; font-family: 'Fredoka One', cursive; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s; box-shadow: 0 4px 14px rgba(45,139,78,0.35); position: relative; overflow: hidden; }
+  .tof-box:hover:not(.used) { transform: scale(1.1) rotate(-2deg); box-shadow: 0 10px 28px rgba(45,139,78,0.5); background: var(--green-light); }
+  .tof-box.used { opacity: 0.3; cursor: not-allowed; pointer-events: none; transform: scale(0.9); }
+ 
+  .tof-question-card { background: white; border-radius: 28px; padding: 36px 32px; max-width: 540px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.12); animation: bounce-in 0.5s ease; }
+  .tof-q-num { display: inline-block; background: var(--yellow); color: var(--green-dark); font-weight: 900; font-size: 0.85rem; padding: 4px 16px; border-radius: 50px; margin-bottom: 16px; letter-spacing: 1px; }
+  .tof-q-text { font-size: 1.3rem; font-weight: 700; color: #1a1a1a; line-height: 1.4; margin-bottom: 24px; }
+  .tof-btns { display: flex; gap: 16px; justify-content: center; }
+  .tof-true-btn, .tof-false-btn { flex: 1; padding: 18px; border: none; border-radius: 20px; font-family: 'Fredoka One', cursive; font-size: 1.6rem; cursor: pointer; transition: all 0.2s; max-width: 160px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+  .tof-true-btn { background: #22c55e; color: white; }
+  .tof-true-btn:hover { background: #16a34a; transform: translateY(-4px) scale(1.05); }
+  .tof-false-btn { background: var(--red); color: white; }
+  .tof-false-btn:hover { background: #dc2626; transform: translateY(-4px) scale(1.05); }
+ 
+  /* ============================ MATCHING / MEMORY GAME ============================ */
+  #matching { background: linear-gradient(160deg, #fef9ee, #fef3c7); }
+  .matching-instruction { background: white; border-radius: 28px; padding: 36px; max-width: 600px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.1); animation: slide-up 0.5s ease; }
+  .matching-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--orange); margin-bottom: 14px; text-align: center; }
+ 
+  /* Set selection */
+  .set-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; max-width: 640px; width: 100%; animation: slide-up 0.5s ease; }
+  .set-card { background: white; border-radius: 20px; padding: 22px 18px; width: 130px; text-align: center; cursor: pointer; transition: all 0.25s; box-shadow: 0 8px 24px rgba(0,0,0,0.18); border: 3px solid transparent; }
+  .set-card:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 16px 36px rgba(0,0,0,0.28); border-color: var(--orange); background: #fff7ed; }
+  .set-card .s-icon { font-size: 2rem; margin-bottom: 6px; }
+  .set-card .s-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--orange); }
+  .set-card .s-sub { font-size: 0.72rem; color: #999; font-weight: 700; margin-top: 4px; }
+ 
+  .preview-card { background: white; border-radius: 28px; padding: 36px; max-width: 560px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.1); animation: slide-up 0.5s ease; text-align:center; }
+  .preview-title { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--orange); margin-bottom: 18px; }
+  .preview-pair-row { display:flex; align-items:center; justify-content: space-between; background:#fff7ed; border-radius:14px; padding: 14px 18px; margin-bottom: 10px; font-weight: 700; font-size: 0.95rem; color:#444; animation: slide-up 0.4s ease; gap: 10px; }
+  .preview-pair-row .pp-arrow { color: var(--orange); font-size: 1.3rem; flex-shrink:0; }
+  .preview-pair-row .pp-food { flex: 1; text-align: right; }
+  .preview-pair-row .pp-benefit { flex: 1; text-align: left; font-weight: 600; color: #555; }
+ 
+  .memory-meta { display:flex; gap: 14px; justify-content:center; flex-wrap:wrap; }
+  .memory-pill { background: white; border-radius: 16px; padding: 10px 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); text-align:center; }
+  .memory-pill .mp-label { font-size: 0.72rem; color:#888; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .memory-pill .mp-value { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--orange); }
+  .memory-pill .mp-value.timer-low { color: var(--red); animation: timer-pulse 0.5s ease infinite; }
+ 
+  .memory-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 600px; width: 100%; animation: slide-up 0.5s ease; }
+  .memory-card-btn { aspect-ratio: 0.85; border-radius: 16px; cursor: pointer; border: none; display:flex; align-items:center; justify-content:center; text-align:center; padding: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); font-weight: 800; transition: background 0.2s; }
+  .mc-back { background: linear-gradient(135deg, var(--orange), #fb923c); color:white; font-size: 1.8rem; }
+  .mc-front { background: white; color:#333; font-size: 0.74rem; border: 2px solid #fed7aa; line-height:1.25; }
+  .mc-matched { background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important; border-color: #22c55e !important; color: var(--green) !important; cursor: default; opacity: 0.7; }
+  .mc-wrong { background: #fee2e2 !important; border-color: var(--red) !important; animation: shake 0.4s ease; }
+ 
+  .matching-progress { text-align: center; font-size: 0.9rem; font-weight: 700; color: #666; }
+  .match-score { font-size: 2rem; font-family: 'Fredoka One', cursive; color: var(--green); }
+ 
+  .score-badge { background: var(--yellow); color: var(--green-dark); padding: 4px 14px; border-radius: 50px; font-weight: 900; font-size: 0.9rem; }
+ 
+  @media (max-width: 480px) {
+    .game-cards { flex-direction: column; align-items: center; }
+    .game-card { width: 100%; max-width: 280px; }
+    .box-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .tof-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .difficulty-row { flex-direction: column; align-items: center; }
+    .diff-card { width: 100%; max-width: 260px; }
+    .set-row { flex-direction: column; align-items: center; }
+    .set-card { width: 100%; max-width: 220px; }
+  }
+</style>
+</head>
+<body>
+ 
+<div id="particles"></div>
+ 
+<!-- ============ NAME ENTRY SCREEN ============ -->
+<div id="name-entry" class="screen active">
+  <div class="name-card">
+    <div class="emoji-row">🥦🍎🥕</div>
+    <h1>Welcome, Champion!</h1>
+    <p>Enter your name to start tracking your nutrition game scores</p>
+    <input type="text" id="player-name-input" class="name-input" placeholder="Type your name..." maxlength="20" autocomplete="off">
+    <button class="big-btn" style="width:100%;" onclick="submitPlayerName()">▶ LET'S PLAY</button>
+  </div>
+</div>
+ 
+<!-- ============ HOME SCREEN ============ -->
+<div id="home" class="screen">
+  <div class="home-circle" style="width:600px;height:600px;top:-200px;left:-150px;"></div>
+  <div class="home-circle" style="width:400px;height:400px;bottom:-100px;right:-100px;"></div>
+ 
+  <div class="home-content">
+    <div class="home-badge">🇵🇭 July 2026 — Nutrition Month</div>
+    <div class="home-title">NUTRISYON<br><span>MONTH</span> 🥦</div>
+    <div class="home-subtitle">Nutrisyon sa Kalikasan, Ating Pangalagaan!</div>
+    <div class="player-welcome">👋 Player: <span id="home-player-name">Guest</span></div>
+    <div class="home-tagline">Test your nutrition knowledge — learn while you play!</div>
+ 
+    <div class="game-cards">
+      <div class="game-card" style="--card-accent:#f97316;" onclick="startScramble()">
+        <span class="card-icon">🔤</span>
+        <div class="card-title">Word Scramble</div>
+        <div class="card-desc">Unscramble nutrition words by difficulty level!</div>
+        <div class="card-play-btn" style="background:#f97316;">PLAY →</div>
+      </div>
+      <div class="game-card" style="--card-accent:#3b82f6;" onclick="startTOF()">
+        <span class="card-icon">✅</span>
+        <div class="card-title">True or False</div>
+        <div class="card-desc">Test what you know about healthy eating habits!</div>
+        <div class="card-play-btn" style="background:#3b82f6;">PLAY →</div>
+      </div>
+      <div class="game-card" style="--card-accent:#8b5cf6;" onclick="startMatching()">
+        <span class="card-icon">🧠</span>
+        <div class="card-title">Memory Match</div>
+        <div class="card-desc">Flip cards and match foods to their benefits!</div>
+        <div class="card-play-btn" style="background:#8b5cf6;">PLAY →</div>
+      </div>
+    </div>
+ 
+    <div style="margin-top:30px;">
+      <button class="btn-reset" onclick="confirmReset()">🔄 RESET GAME</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============ SCRAMBLE SCREEN ============ -->
+<div id="scramble" class="screen">
+  <div class="game-header">
+    <div>
+      <div class="game-header-title">🔤 Word Scramble</div>
+      <div class="game-header-sub">Pick a difficulty — unscramble the nutrition word!</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="score-badge">⭐ <span id="scr-score-disp">0</span> pts</span>
+      <button class="btn-reset" onclick="confirmReset()">RESET</button>
+      <button class="btn-home" onclick="confirmGoHome()">🏠 Home</button>
+    </div>
+  </div>
+ 
+  <!-- Instructions -->
+  <div id="scr-instructions" class="game-body">
+    <div class="instructions-card">
+      <div class="instructions-title">📋 How to Play</div>
+      <div class="instruction-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Open the game board difficulty level (<strong>Easy, Normal, or Difficult</strong>).</div>
+      </div>
+      <div class="instruction-step">
+        <div class="step-num">2</div>
+        <div class="step-text">To move up, players need to get <strong>three correct words in a row</strong> for each category. After that, they can decide if they want to keep going all the way to the top level.</div>
+      </div>
+      <div class="instruction-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Player will unscramble them correctly.
+          <div class="timing-pill-row">
+            <span class="timing-pill easy">Easy — 5 secs</span>
+            <span class="timing-pill normal">Normal — 7 secs</span>
+            <span class="timing-pill hard">Difficult — 10 secs</span>
+          </div>
+        </div>
+      </div>
+      <div class="instruction-step">
+        <div class="step-num">4</div>
+        <div class="step-text">Players are required to <strong>state the correct word aloud</strong>.</div>
+      </div>
+      <div class="instruction-step">
+        <div class="step-num">5</div>
+        <div class="step-text">The game master will reveal the answer to verify whether the guess is correct.</div>
+      </div>
+      <div class="instruction-step">
+        <div class="step-num">6</div>
+        <div class="step-text">The player will be <strong>eliminated</strong> if their guessed answer is incorrect.</div>
+      </div>
+      <div style="text-align:center;margin-top:20px;">
+        <button class="big-btn" style="background:#f97316;box-shadow:0 6px 20px rgba(249,115,22,0.4);" onclick="showScrDifficulty()">▶ CHOOSE DIFFICULTY</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Difficulty selection -->
+  <div id="scr-difficulty" class="game-body scramble-board-screen" style="display:none;">
+    <div style="text-align:center;color:white;animation:slide-down 0.5s ease;">
+      <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;">Choose Difficulty</div>
+      <div style="font-size:0.9rem;opacity:0.8;">Get 3 in a row to unlock the next level!</div>
+    </div>
+    <div class="difficulty-row">
+      <div class="diff-card easy" onclick="enterDifficulty('easy')">
+        <div class="d-icon">🟢</div>
+        <div class="d-title">Easy</div>
+        <div class="d-sub">5-letter words • 5 secs</div>
+        <div class="d-streak">Streak: <span id="streak-easy-disp">0</span>/3</div>
+      </div>
+      <div class="diff-card normal" id="diff-normal-card" onclick="enterDifficulty('normal')">
+        <div class="d-icon">🟡</div>
+        <div class="d-title">Normal</div>
+        <div class="d-sub">6-letter words • 7 secs</div>
+        <div class="d-streak">Streak: <span id="streak-normal-disp">0</span>/3</div>
+      </div>
+      <div class="diff-card hard" id="diff-hard-card" onclick="enterDifficulty('hard')">
+        <div class="d-icon">🔴</div>
+        <div class="d-title">Difficult</div>
+        <div class="d-sub">7+ letter words • 10 secs</div>
+        <div class="d-streak">Streak: <span id="streak-hard-disp">0</span>/3</div>
+      </div>
+    </div>
+    <div class="memory-pill" style="margin-top:6px;">
+      <div class="mp-label">Overall Points</div>
+      <div class="mp-value" id="scr-diff-score-disp">0</div>
+    </div>
+  </div>
+ 
+  <!-- Board view (boxes) -->
+  <div id="scr-board" class="game-body scramble-board-screen" style="display:none;">
+    <div style="text-align:center;color:white;animation:slide-down 0.5s ease;">
+      <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;" id="scr-board-title">EASY — Choose Your Box!</div>
+      <div style="font-size:0.9rem;opacity:0.8;">Pick any numbered box to reveal your scrambled word</div>
+    </div>
+    <div class="box-grid" id="scr-boxes"></div>
+    <button class="big-btn gray" onclick="backToScrDifficulty()">↩ Change Difficulty</button>
+  </div>
+ 
+  <!-- Question view (scrambled word + timer, no input box) -->
+  <div id="scr-question" class="game-body" style="display:none;">
+    <div class="timer-ring-wrap">
+      <span class="timer-label">⏱ Timer</span>
+      <span class="timer-count" id="scr-timer">10</span>
+      <span class="timer-label">seconds</span>
+    </div>
+    <div class="scramble-board">
+      <div class="round-label" id="scr-round-label">EASY — ROUND 1</div>
+      <div class="scramble-instruction">Unscramble this nutrition word!</div>
+      <div class="scramble-word" id="scr-jumbled">RPTNOIE</div>
+      <div class="scramble-hint" id="scr-hint"><strong>💡 Hint:</strong> Builds and repairs the body.</div>
+      <div style="font-size:0.85rem;color:#999;font-weight:700;margin-top:10px;">🗣️ Say your answer out loud!</div>
+    </div>
+  </div>
+ 
+  <!-- Time's Up view: Show Correct Answer / Try Again buttons -->
+  <div id="scr-timesup" class="game-body" style="display:none;">
+    <div class="scramble-board">
+      <div class="result-icon">⏰</div>
+      <div class="result-title neutral" style="font-family:'Fredoka One',cursive;">TIME'S UP!</div>
+      <div class="scramble-instruction" style="margin-top:6px;">Did the player guess it correctly?</div>
+      <div class="scramble-word" id="scr-timesup-jumbled" style="font-size:2rem;">RPTNOIE</div>
+      <div style="display:flex;gap:14px;justify-content:center;margin-top:18px;flex-wrap:wrap;">
+        <button class="big-btn" onclick="revealCorrectAnswer()">✅ Show Correct Answer</button>
+        <button class="big-btn gray" onclick="tryAgainPressed()">🔁 Try Again</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Answer view -->
+  <div id="scr-answer" class="game-body" style="display:none;">
+    <div class="answer-card" id="scr-answer-card">
+      <div class="result-icon" id="scr-answer-icon">🎉</div>
+      <div class="result-title" id="scr-answer-title" style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;">Great Job!</div>
+      <div class="result-sub" id="scr-answer-sub">The correct word is:</div>
+      <div class="answer-word" id="scr-answer-word">PROTEIN</div>
+      <div class="scramble-hint" id="scr-answer-hint"><strong>💡 Hint:</strong> Builds and repairs the body.</div>
+      <button class="big-btn" onclick="afterScrRound()" style="margin-top:14px;" id="scr-continue-btn">↩ Back to Difficulty Selection</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============ TRUE OR FALSE SCREEN ============ -->
+<div id="tof" class="screen">
+  <div class="game-header" style="background:var(--blue);">
+    <div>
+      <div class="game-header-title">✅ True or False</div>
+      <div class="game-header-sub">Answer nutrition questions correctly!</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="score-badge">Score: <span id="tof-score-disp">0</span> | Try <span id="tof-tries-disp">0</span>/3</span>
+      <button class="btn-reset" onclick="confirmReset()">RESET</button>
+      <button class="btn-home" onclick="confirmGoHome()">🏠 Home</button>
+    </div>
+  </div>
+ 
+  <div id="tof-instructions" class="game-body">
+    <div class="instructions-card">
+      <div class="instructions-title">📋 How to Play</div>
+      <div class="instruction-step"><div class="step-num">1</div><div class="step-text">You will see <strong>20 question boxes</strong> on the game board.</div></div>
+      <div class="instruction-step"><div class="step-num">2</div><div class="step-text">Click any box to reveal a nutrition statement.</div></div>
+      <div class="instruction-step"><div class="step-num">3</div><div class="step-text">You have <strong>10 seconds</strong> to decide — is it <span style="color:#22c55e;font-weight:800;">TRUE</span> or <span style="color:#ef4444;font-weight:800;">FALSE</span>?</div></div>
+      <div class="instruction-step"><div class="step-num">4</div><div class="step-text">Earn <strong>1 point</strong> for each correct answer. You get <strong>3 tries</strong> total!</div></div>
+      <div class="instruction-step"><div class="step-num">5</div><div class="step-text">After 3 tries, your final score will be shown. Give it your best shot!</div></div>
+      <div style="text-align:center;margin-top:24px;">
+        <button class="big-btn" style="background:var(--blue);" onclick="startTOFGame()">▶ START</button>
+      </div>
+    </div>
+  </div>
+ 
+  <div id="tof-board" class="game-body" style="display:none;background:linear-gradient(160deg,#1e40af,#3b82f6);">
+    <div style="text-align:center;color:white;animation:slide-down 0.5s ease;">
+      <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;">Game Board</div>
+      <div style="font-size:0.9rem;opacity:0.8;">Click any number to open a question</div>
+    </div>
+    <div class="tof-grid" id="tof-boxes"></div>
+  </div>
+ 
+  <div id="tof-question" class="game-body" style="display:none;">
+    <div class="timer-ring-wrap">
+      <span class="timer-label">⏱ Timer</span>
+      <span class="timer-count" id="tof-timer">10</span>
+      <span class="timer-label">seconds</span>
+    </div>
+    <div class="tof-question-card">
+      <div class="tof-q-num" id="tof-q-num">Q1 of 20</div>
+      <div style="font-size:1rem;font-weight:700;color:#888;margin-bottom:10px;">True or False?</div>
+      <div class="tof-q-text" id="tof-q-text">Bananas are a good source of potassium.</div>
+      <div class="tof-btns">
+        <button class="tof-true-btn" onclick="answerTOF(true)">✅ TRUE</button>
+        <button class="tof-false-btn" onclick="answerTOF(false)">❌ FALSE</button>
+      </div>
+    </div>
+  </div>
+ 
+  <div id="tof-final" class="game-body" style="display:none;">
+    <div class="final-score-card">
+      <div style="font-size:3rem;">🏆</div>
+      <div class="final-player-name" id="tof-final-name">Player Name</div>
+      <div style="color:#888;font-weight:700;margin-top:4px;">Final Score</div>
+      <div class="final-score-num" id="tof-final-score">0</div>
+      <div style="color:#666;font-weight:600;margin-bottom:20px;">out of 3 questions answered</div>
+      <button class="big-btn yellow" onclick="goHomeDirect()">🏠 Back to Home</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============ MATCHING / MEMORY SCREEN ============ -->
+<div id="matching" class="screen">
+  <div class="game-header" style="background:#6d28d9;">
+    <div>
+      <div class="game-header-title">🧠 Memory Match</div>
+      <div class="game-header-sub">Match the food to its health benefit!</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="score-badge">Matches: <span id="match-score">0</span>/5</span>
+      <button class="btn-reset" onclick="confirmReset()">RESET</button>
+      <button class="btn-home" onclick="confirmGoHome()">🏠 Home</button>
+    </div>
+  </div>
+ 
+  <!-- Instructions -->
+  <div id="match-instructions" class="game-body">
+    <div class="matching-instruction">
+      <div class="matching-title">🍎 How to Play</div>
+      <div class="instruction-step"><div class="step-num">1</div><div class="step-text">Shuffle all cards and place them face down.</div></div>
+      <div class="instruction-step"><div class="step-num">2</div><div class="step-text">Players take turns flipping two cards.</div></div>
+      <div class="instruction-step"><div class="step-num">3</div><div class="step-text">If the food matches its benefit (e.g., Carrot ↔ Good for eyesight), the player will continue matching, until all pairs are matched.</div></div>
+      <div class="instruction-step"><div class="step-num">4</div><div class="step-text">If not, cards are flipped back from the start.</div></div>
+      <div class="instruction-step"><div class="step-num">5</div><div class="step-text">The player will be given <strong>1 minute</strong> to finish the game.</div></div>
+      <div style="text-align:center;margin-top:20px;">
+        <button class="big-btn purple" onclick="showSetSelection()">▶ NEXT</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Set selection -->
+  <div id="match-set-select" class="game-body" style="display:none;">
+    <div style="text-align:center;animation:slide-down 0.5s ease;">
+      <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;color:var(--orange);">Choose a Card Set</div>
+      <div style="font-size:0.9rem;color:#888;font-weight:600;">Pick Set A, B, C, D, or E to play</div>
+    </div>
+    <div class="set-row" id="set-row"></div>
+  </div>
+ 
+  <!-- Preview of pairs: card-by-card reveal -->
+  <div id="match-preview" class="game-body" style="display:none;">
+    <div class="preview-card">
+      <div class="preview-title">📌 Example Matches — Memorize the Pairs!</div>
+      <div id="preview-rows"></div>
+      <div style="text-align:center;margin-top:20px;">
+        <button class="big-btn purple" onclick="beginReadySetGoForMemory()">▶ START THE GAME</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Game board -->
+  <div id="match-board" class="game-body" style="display:none;">
+    <div class="memory-meta">
+      <div class="memory-pill"><div class="mp-label">Time Left</div><div class="mp-value" id="memory-timer">1:00</div></div>
+      <div class="memory-pill"><div class="mp-label">Matches</div><div class="mp-value" id="memory-matches">0/5</div></div>
+    </div>
+    <div class="memory-grid" id="memory-grid"></div>
+    <div style="text-align:center;font-size:0.85rem;color:#888;font-weight:600;">
+      👆 Flip two cards to find a matching pair
+    </div>
+  </div>
+ 
+  <!-- Final result -->
+  <div id="match-final" class="game-body" style="display:none;">
+    <div class="final-score-card">
+      <div style="font-size:3rem;" id="match-final-icon">🏆</div>
+      <div class="final-player-name" id="match-final-name">Player Name</div>
+      <div style="color:#888;font-weight:700;margin-top:4px;" id="match-final-label">Time Used</div>
+      <div class="final-score-num" id="match-final-time" style="font-size:3rem;">0:42</div>
+      <div style="color:#666;font-weight:600;margin-bottom:20px;" id="match-final-msg">You matched all 5 pairs!</div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="big-btn yellow" onclick="showSetSelection()">🔄 Play Again</button>
+        <button class="big-btn purple" onclick="goHomeDirect()">🏠 Back to Home</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============ RESULT OVERLAY (TOF) ============ -->
+<div id="result-overlay" class="result-overlay" style="display:none;">
+  <div class="result-card" id="result-card">
+    <span class="result-icon" id="res-icon">🎉</span>
+    <div class="result-title" id="res-title">Correct!</div>
+    <div class="result-sub" id="res-sub">Nice one!</div>
+    <div class="result-question" id="res-question"></div>
+    <div class="result-answer" id="res-answer" style="display:none;">
+      <strong id="res-ans-text"></strong>
+      <div class="detail" id="res-detail"></div>
+    </div>
+    <div class="result-points" id="res-points" style="display:none;">⭐ You earned 1 point! Great Job!</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;" id="res-buttons"></div>
+  </div>
+</div>
+ 
+<!-- ============ CONFIRM MODAL (Home / Reset) ============ -->
+<div id="confirm-overlay" class="result-overlay" style="display:none;">
+  <div class="confirm-card">
+    <div class="c-icon" id="confirm-icon">🏠</div>
+    <h3 id="confirm-text">Are you sure <span id="confirm-name">Player</span> going Home?</h3>
+    <div class="confirm-btns">
+      <button class="big-btn gray" onclick="hideConfirm()">Cancel</button>
+      <button class="big-btn red" id="confirm-yes-btn" onclick="">Yes</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============ READY SET GO OVERLAY ============ -->
+<div class="rsg-overlay" id="rsg-overlay">
+  <div class="rsg-text" id="rsg-text">READY?</div>
+</div>
+ 
+<script>
+// ==========================================
+//  DATA — WORD SCRAMBLE BANKS
+// ==========================================
+const HINTS = {
+  FRUIT:"A food group rich in vitamins and natural sugar.", GRAIN:"A common source of energy.",
+  DAIRY:"Food group that includes milk and cheese.", SUGAR:"Should be eaten in moderation.",
+  SALAD:"A mix of raw vegetables, often eaten as a healthy side dish.", LIVER:"An organ that helps filter toxins from the body.",
+  FATTY:"Describes food that is high in oils or grease.", JUICE:"A drink extracted from fruits or vegetables.",
+  LEAN:"Describes meat with very little fat.", APPLE:"A crunchy fruit, keeps the doctor away.",
+  SALTY:"Describes food high in sodium.", LEAFY:"Describes green vegetables like lettuce and spinach.",
+  AMINO:"___ acids are the building blocks of protein.", LUNGS:"Organs you breathe with — protected by good nutrition.",
+  WATER:"Essential for life and hydration.", BEANS:"A plant-based source of protein and fiber.",
+  HEART:"Healthy food protects this vital organ.",
+  CALORY:"A unit that measures the energy in food (spelled here without the 'IE').",
+  SODIUM:"A mineral found in salt; too much raises blood pressure.", LIPIDS:"The scientific term for fats.",
+  KIDNEY:"An organ that filters waste from the blood.", JOINTS:"Body parts that benefit from calcium and good nutrition.",
+  FIBERS:"Found in whole grains, helps digestion.", COFFEE:"A caffeinated drink; best enjoyed in moderation.",
+  GLANDS:"Body parts that release hormones, some affected by diet.", HEALTH:"The overall condition of your body.",
+  OXYGEN:"What your blood carries to your cells, helped by iron-rich food.", PLANTS:"A source of vitamins, minerals, and fiber.",
+  TOMATO:"A red fruit/vegetable rich in lycopene.", ORANGE:"A citrus fruit rich in Vitamin C.",
+  GRAPES:"Small, round fruits that grow in bunches.", SALMON:"A fish rich in omega-3 fatty acids.",
+  SQUASH:"A vegetable good for eyesight and rich in Vitamin A.",
+  NUTRITION:"The science of how the body uses food.", VITAMINS:"Micronutrients essential for body functions.",
+  MAGNESIUM:"A mineral important for muscle and nerve function.", CARBOHYDRATES:"Nutrients that are the body's main energy source.",
+  CHOLESTEROL:"A fatty substance in the blood; too much can clog arteries.", DISEASE:"An illness; good nutrition helps prevent many of these.",
+  POTASSIUM:"A mineral found in bananas that supports muscle function.", GLUCOSE:"The main sugar used by the body for energy.",
+  NATURAL:"Describes food that is unprocessed or untouched by chemicals.", VINEGAR:"An acidic liquid sometimes used in healthy cooking.",
+  PROTEIN:"Builds and repairs the body.", VEGETABLE:"A healthy choice for every meal.",
+  ARUGULA:"A peppery leafy green used in salads.", CUCUMBER:"A hydrating, low-calorie vegetable.",
+  ROOTCROPS:"Vegetables that grow underground, like cassava and taro.", LEGUMES:"Beans, lentils, and peas — great plant protein sources.",
+  MINERALS:"Inorganic nutrients like calcium and iron.", NUTRIENTS:"Substances that provide nourishment.",
+  OXIDANTS:"Unstable molecules that can damage cells — fought by antioxidants.", DIETARY:"Relating to food and eating habits.",
+  METABOLISM:"The process of converting food into energy.", HYDRATION:"The process of supplying the body with enough water.",
+  PROPORTION:"The right balance or amount of each food group.", THYROID:"A gland that needs iodine to function well.",
+  RADICALS:"Free ___ — unstable molecules linked to aging and disease.", ENZYMES:"Proteins that speed up digestion.",
+  FERMENTED:"Describes foods like yogurt that are good for gut health.", ESSENTIAL:"Describes nutrients the body cannot produce on its own.",
+  PROBIOTIC:"Live bacteria that are good for gut health.", FLAVONOID:"A plant compound with antioxidant properties.",
+  CALCIUM:"Mineral that keeps bones and teeth strong.", SPINACH:"A leafy green high in iron."
+};
+ 
+const SCRAMBLE_FINAL = {
+  easy: ["FRUIT","GRAIN","DAIRY","SUGAR","SALAD","LIVER","FATTY","JUICE","LEAN","APPLE",
+         "SALTY","LEAFY","AMINO","LUNGS","WATER","BEANS","HEART"],
+  normal: ["CALORY","SODIUM","LIPIDS","KIDNEY","JOINTS","FIBERS","COFFEE","GLANDS","HEALTH",
+           "OXYGEN","PLANTS","TOMATO","ORANGE","GRAPES","SALMON","SQUASH"],
+  hard: ["NUTRITION","VITAMINS","MAGNESIUM","CARBOHYDRATES","CHOLESTEROL","DISEASE","POTASSIUM",
+         "GLUCOSE","NATURAL","VINEGAR","PROTEIN","VEGETABLE","ARUGULA","CUCUMBER","ROOTCROPS",
+         "LEGUMES","MINERALS","NUTRIENTS","OXIDANTS","DIETARY","METABOLISM","HYDRATION",
+         "PROPORTION","THYROID","RADICALS","ENZYMES","FERMENTED","ESSENTIAL","PROBIOTIC",
+         "FLAVONOID","CALCIUM","SPINACH"]
+};
+const DIFF_SECONDS = { easy: 5, normal: 7, hard: 10 };
+const DIFF_LABELS = { easy: 'EASY', normal: 'NORMAL', hard: 'DIFFICULT' };
+ 
+function getHint(word) { return HINTS[word] || "A nutrition-related word."; }
+ 
+// ==========================================
+//  DATA — TRUE OR FALSE
+// ==========================================
+const TOF_QUESTIONS = [
+  { q: 'Bananas are a good source of potassium.', a: true, detail: 'Bananas provide potassium, which helps support fluid balance, muscles, and nerves.' },
+  { q: 'Soft drinks hydrate the body better than water.', a: false, detail: "Water is the best hydrator. Soft drinks contain sugar and additives that don't hydrate efficiently." },
+  { q: 'Carrots can help improve eyesight because they contain Vitamin A.', a: true, detail: 'Vitamin A is essential for maintaining good vision, especially in low-light conditions.' },
+  { q: 'Whole grains provide more fiber than refined grains.', a: true, detail: 'Whole grains retain the bran and germ, which are rich in fiber and nutrients.' },
+  { q: 'Eating too much sugar can increase the risk of diabetes.', a: true, detail: 'Excessive sugar intake can lead to insulin resistance and type 2 diabetes.' },
+  { q: 'Milk is a poor source of calcium.', a: false, detail: 'Milk is one of the best sources of calcium, essential for bone health.' },
+  { q: 'Fish contains healthy fats called omega-3 fatty acids.', a: true, detail: 'Omega-3 fatty acids in fish support heart health and brain function.' },
+  { q: 'Skipping breakfast always helps with weight loss.', a: false, detail: 'Skipping breakfast can lead to overeating later and negatively affect metabolism.' },
+  { q: 'Vitamin C helps the body heal wounds.', a: true, detail: 'Vitamin C plays a key role in collagen production, which is needed for wound healing.' },
+  { q: 'Junk food is a good source of essential nutrients.', a: false, detail: 'Junk food is high in calories, salt, and sugar but low in vitamins and minerals.' },
+  { q: 'Drinking eight glasses of water a day is recommended for most people.', a: true, detail: 'Adequate water intake supports digestion, circulation, and overall body function.' },
+  { q: 'Spinach is high in iron.', a: true, detail: 'Spinach is a plant-based iron source that helps prevent anemia.' },
+  { q: 'Fast food meals are usually low in sodium.', a: false, detail: 'Fast food is typically high in sodium, which can raise blood pressure.' },
+  { q: 'Nuts can be a healthy source of protein and good fats.', a: true, detail: 'Nuts provide healthy unsaturated fats, plant protein, and important minerals.' },
+  { q: 'Eating fruits and vegetables can lower the risk of heart disease.', a: true, detail: 'A diet rich in fruits and vegetables provides antioxidants that protect the heart.' },
+  { q: 'Candy provides long-lasting energy for the body.', a: false, detail: 'Candy gives a quick sugar spike followed by an energy crash, not lasting energy.' },
+  { q: 'Vitamin D helps the body absorb calcium.', a: true, detail: 'Vitamin D is essential for calcium absorption and maintaining strong bones.' },
+  { q: 'Fiber helps with digestion and prevents constipation.', a: true, detail: 'Dietary fiber adds bulk to stool and promotes healthy gut movement.' },
+  { q: 'Processed foods usually contain fewer preservatives than fresh foods.', a: false, detail: 'Processed foods contain MORE preservatives to extend shelf life.' },
+  { q: 'Yogurt contains probiotics that support gut health.', a: true, detail: 'Probiotics in yogurt promote a healthy balance of gut bacteria.' },
+];
+ 
+// ==========================================
+//  DATA — MEMORY MATCH SETS A-E
+// ==========================================
+const MEMORY_SETS = {
+  A: [
+    { food: '💧 Water', benefit: 'Essential for hydration' },
+    { food: '🥒 Cucumber', benefit: 'Supports skin health' },
+    { food: '🥑 Avocado', benefit: 'Healthy fats' },
+    { food: '🟡 Squash', benefit: 'Good for eyesight' },
+    { food: '🍌 Banana', benefit: 'Rich in potassium' },
+  ],
+  B: [
+    { food: '🥬 Lettuce', benefit: 'Low calorie, supports hydration & provides fiber' },
+    { food: '🍈 Guava', benefit: 'Very high in Vitamin C & supports immunity' },
+    { food: '🟢 Green Peas', benefit: 'Good source of protein, fiber, and Vitamin K' },
+    { food: '🥔 Cassava', benefit: 'Energy-rich carbohydrate, supports gut health' },
+    { food: '🍉 Watermelon', benefit: 'Hydrating, supports heart health, contains lycopene' },
+  ],
+  C: [
+    { food: '🍓 Strawberry', benefit: 'High in Vitamin C & antioxidants' },
+    { food: '🥒 Bottle Gourd', benefit: 'Low in calories' },
+    { food: '🟣 Mangosteen', benefit: 'Supports immunity & anti-inflammatory properties' },
+    { food: '🫑 Bell Pepper', benefit: 'Boosts immunity' },
+    { food: '🍅 Tomato', benefit: 'Rich in lycopene & good for heart health' },
+  ],
+  D: [
+    { food: '🟠 Papaya', benefit: 'Rich in Vitamin A and C & supports digestion' },
+    { food: '🫚 Ginger', benefit: 'Anti-inflammatory, aids digestion & relieves nausea' },
+    { food: '🥦 Broccoli', benefit: 'Rich in Vitamin C, fiber & antioxidants' },
+    { food: '🍈 Melon', benefit: 'Hydrating & supports skin health' },
+    { food: '🥔 Taro', benefit: 'Supports heart health & provides resistant starch' },
+  ],
+  E: [
+    { food: '🥬 Spinach', benefit: 'High in iron & supports bone health' },
+    { food: '🫐 Blackberry', benefit: 'High in antioxidants & supports brain health' },
+    { food: '🧄 Garlic', benefit: 'Has antibacterial properties' },
+    { food: '🍍 Pineapple', benefit: 'Contains bromelain (aids digestion) & rich in Vitamin C' },
+    { food: '🟢 Okra', benefit: 'High in fiber & supports blood sugar control' },
+  ],
+};
+ 
+// ==========================================
+//  GLOBAL STATE
+// ==========================================
+let playerName = '';
+ 
+let scrScore = 0;
+let scrDifficulty = 'easy';
+let scrStreaks = { easy: 0, normal: 0, hard: 0 };
+let scrUnlocked = { easy: true, normal: false, hard: false };
+let scrUsedBoxes = { easy: new Set(), normal: new Set(), hard: new Set() };
+let scrCurrentBox = -1;
+let scrTimer = null;
+let scrCurrentWord = '';
+ 
+let tofTries = 0, tofScore = 0, tofCurrentQ = -1, tofTimer = null;
+let tofUsedBoxes = new Set();
+ 
+let currentMemorySet = 'A';
+let memoryTimer = null, memoryTimeLeft = 60, memoryCards = [], memoryFlipped = [], memoryMatchedCount = 0, memoryLock = false;
+ 
+// ==========================================
+//  PLAYER NAME
+// ==========================================
+function submitPlayerName() {
+  const val = document.getElementById('player-name-input').value.trim();
+  playerName = val || 'Guest';
+  document.getElementById('home-player-name').textContent = playerName;
+  showScreen('home');
+  createParticles();
+}
+ 
+// ==========================================
+//  PARTICLES
+// ==========================================
+const FOOD_EMOJIS = ['🥦', '🥕', '🍎', '🍌', '🥛', '🍉', '🐟', '🥑', '🍇', '🌽', '🥝', '🍓'];
+function createParticles() {
+  const container = document.getElementById('particles');
+  container.innerHTML = '';
+  FOOD_EMOJIS.forEach((emoji) => {
+    const el = document.createElement('div');
+    el.className = 'food-particle';
+    el.textContent = emoji;
+    el.style.cssText = `
+      left: ${Math.random() * 95}%;
+      top: ${Math.random() * 95}%;
+      animation-delay: ${Math.random() * 3}s;
+      animation-duration: ${2.5 + Math.random() * 2}s;
+      font-size: ${1.2 + Math.random() * 1.5}rem;
+    `;
+    container.appendChild(el);
+  });
+}
+ 
+// ==========================================
+//  NAVIGATION
+// ==========================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => { s.style.display = 'none'; s.classList.remove('active'); });
+  const screen = document.getElementById(id);
+  screen.style.display = 'flex';
+  screen.classList.add('active');
+}
+ 
+function goHomeDirect() {
+  clearAllTimers();
+  showScreen('home');
+  createParticles();
+}
+ 
+function confirmGoHome() {
+  document.getElementById('confirm-icon').textContent = '🏠';
+  document.getElementById('confirm-text').innerHTML = `Are you sure <span id="confirm-name">${escapeHtml(playerName)}</span> going Home?`;
+  const yesBtn = document.getElementById('confirm-yes-btn');
+  yesBtn.textContent = 'Yes, Go Home';
+  yesBtn.className = 'big-btn red';
+  yesBtn.onclick = () => { hideConfirm(); goHomeDirect(); };
+  document.getElementById('confirm-overlay').style.display = 'flex';
+}
+ 
+function confirmReset() {
+  document.getElementById('confirm-icon').textContent = '🔄';
+  document.getElementById('confirm-text').innerHTML = `Reset everything, <span id="confirm-name">${escapeHtml(playerName)}</span>? This will clear all scores and ask for a new name.`;
+  const yesBtn = document.getElementById('confirm-yes-btn');
+  yesBtn.textContent = 'Yes, Reset';
+  yesBtn.className = 'big-btn red';
+  yesBtn.onclick = () => { hideConfirm(); doFullReset(); };
+  document.getElementById('confirm-overlay').style.display = 'flex';
+}
+ 
+function hideConfirm() {
+  document.getElementById('confirm-overlay').style.display = 'none';
+}
+ 
+function doFullReset() {
+  clearAllTimers();
+  playerName = '';
+  scrScore = 0; scrCurrentBox = -1;
+  scrDifficulty = 'easy';
+  scrStreaks = { easy: 0, normal: 0, hard: 0 };
+  scrUnlocked = { easy: true, normal: false, hard: false };
+  scrUsedBoxes = { easy: new Set(), normal: new Set(), hard: new Set() };
+  tofTries = 0; tofScore = 0; tofCurrentQ = -1;
+  tofUsedBoxes = new Set();
+  currentMemorySet = 'A';
+  memoryTimeLeft = 60; memoryFlipped = []; memoryMatchedCount = 0; memoryLock = false;
+ 
+  document.getElementById('player-name-input').value = '';
+  showScreen('name-entry');
+}
+ 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+ 
+// ==========================================
+//  CONFETTI
+// ==========================================
+function launchConfetti(count = 60) {
+  const colors = ['#f9c22e','#22c55e','#3b82f6','#f97316','#ef4444','#8b5cf6','#14b8a6'];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${6 + Math.random() * 8}px;
+      height: ${6 + Math.random() * 8}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${2 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.5}s;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+}
+ 
+function flashScreen() {
+  const el = document.createElement('div');
+  el.className = 'final-flash';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2000);
+}
+ 
+// ==========================================
+//  READY SET GO
+// ==========================================
+function readySetGo(callback) {
+  const overlay = document.getElementById('rsg-overlay');
+  const text = document.getElementById('rsg-text');
+  overlay.style.display = 'flex';
+  const seq = ['READY?', 'SET...', 'GO!'];
+  let i = 0;
+  text.textContent = seq[i];
+  text.className = 'rsg-text';
+  text.style.animation = 'none';
+  requestAnimationFrame(() => { text.style.animation = 'rsg-pop 0.5s ease'; });
+ 
+  const interval = setInterval(() => {
+    i++;
+    if (i < seq.length) {
+      text.textContent = seq[i];
+      text.className = i === seq.length - 1 ? 'rsg-text go' : 'rsg-text';
+      text.style.animation = 'none';
+      requestAnimationFrame(() => { text.style.animation = 'rsg-pop 0.5s ease'; });
+    } else {
+      clearInterval(interval);
+      overlay.style.display = 'none';
+      callback();
+    }
+  }, 600);
+}
+ 
+// ==========================================
+//  RESULT OVERLAY (used by TOF)
+// ==========================================
+function showResult({ icon, title, titleClass, sub, question, showAnswer, answerText, detail, showPoints, buttons }) {
+  document.getElementById('res-icon').textContent = icon;
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-title').className = 'result-title ' + (titleClass || '');
+  document.getElementById('res-sub').textContent = sub;
+  document.getElementById('res-question').textContent = question;
+ 
+  const ansDiv = document.getElementById('res-answer');
+  if (showAnswer) {
+    ansDiv.style.display = 'block';
+    document.getElementById('res-ans-text').textContent = answerText;
+    document.getElementById('res-detail').textContent = detail || '';
+  } else { ansDiv.style.display = 'none'; }
+ 
+  const ptsDiv = document.getElementById('res-points');
+  ptsDiv.style.display = showPoints ? 'inline-block' : 'none';
+ 
+  const btnDiv = document.getElementById('res-buttons');
+  btnDiv.innerHTML = '';
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'big-btn ' + (b.cls || '');
+    btn.textContent = b.label;
+    btn.onclick = b.action;
+    btnDiv.appendChild(btn);
+  });
+ 
+  document.getElementById('result-overlay').style.display = 'flex';
+}
+function hideResult() { document.getElementById('result-overlay').style.display = 'none'; }
+ 
+// ==========================================
+//  SCRAMBLE GAME
+// ==========================================
+function scramble(word) {
+  let arr = word.split('');
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  const result = arr.join('');
+  return result === word ? scramble(word) : result;
+}
+ 
+function startScramble() {
+  scrScore = 0;
+  scrStreaks = { easy: 0, normal: 0, hard: 0 };
+  scrUnlocked = { easy: true, normal: false, hard: false };
+  scrUsedBoxes = { easy: new Set(), normal: new Set(), hard: new Set() };
+  showScreen('scramble');
+  showScrView('instructions');
+  updateScrHeader();
+}
+ 
+function showScrDifficulty() {
+  showScrView('difficulty');
+  renderDifficultyCards();
+}
+ 
+function renderDifficultyCards() {
+  document.getElementById('streak-easy-disp').textContent = scrStreaks.easy;
+  document.getElementById('streak-normal-disp').textContent = scrStreaks.normal;
+  document.getElementById('streak-hard-disp').textContent = scrStreaks.hard;
+  document.getElementById('scr-diff-score-disp').textContent = scrScore;
+ 
+  document.getElementById('diff-normal-card').classList.toggle('locked', !scrUnlocked.normal);
+  document.getElementById('diff-hard-card').classList.toggle('locked', !scrUnlocked.hard);
+}
+ 
+function enterDifficulty(level) {
+  if (level === 'normal' && !scrUnlocked.normal) return;
+  if (level === 'hard' && !scrUnlocked.hard) return;
+  scrDifficulty = level;
+  buildScrBoard();
+  showScrView('board');
+}
+ 
+function backToScrDifficulty() { showScrDifficulty(); }
+ 
+function buildScrBoard() {
+  document.getElementById('scr-board-title').textContent = `${DIFF_LABELS[scrDifficulty]} — Choose Your Box!`;
+  const grid = document.getElementById('scr-boxes');
+  grid.innerHTML = '';
+  const bank = SCRAMBLE_FINAL[scrDifficulty];
+  for (let i = 0; i < bank.length; i++) {
+    const btn = document.createElement('button');
+    const used = scrUsedBoxes[scrDifficulty].has(i);
+    btn.className = 'box-btn' + (used ? ' used' : '');
+    btn.innerHTML = `<span class="box-num">${i+1}</span>📦`;
+    btn.onclick = () => openScrBox(i);
+    grid.appendChild(btn);
+  }
+}
+ 
+function updateScrHeader() {
+  document.getElementById('scr-score-disp').textContent = scrScore;
+}
+ 
+function openScrBox(idx) {
+  scrCurrentBox = idx;
+  readySetGo(() => {
+    const bank = SCRAMBLE_FINAL[scrDifficulty];
+    const word = bank[idx % bank.length];
+    scrCurrentWord = word;
+    document.getElementById('scr-round-label').textContent = `${DIFF_LABELS[scrDifficulty]} — ROUND ${idx + 1}`;
+    document.getElementById('scr-jumbled').textContent = scramble(word);
+    document.getElementById('scr-hint').innerHTML = `<strong>💡 Hint:</strong> ${getHint(word)}`;
+    showScrView('question');
+    startScrTimer(DIFF_SECONDS[scrDifficulty]);
+  });
+}
+ 
+function startScrTimer(secs) {
+  clearScrTimer();
+  let t = secs;
+  const el = document.getElementById('scr-timer');
+  el.textContent = t;
+  el.className = 'timer-count';
+  scrTimer = setInterval(() => {
+    t--;
+    el.textContent = t;
+    if (t <= Math.ceil(secs * 0.3)) el.className = 'timer-count urgent';
+    if (t <= 0) {
+      clearInterval(scrTimer);
+      showTimesUp();
+    }
+  }, 1000);
+}
+function clearScrTimer() { if (scrTimer) { clearInterval(scrTimer); scrTimer = null; } }
+ 
+function showTimesUp() {
+  document.getElementById('scr-timesup-jumbled').textContent = document.getElementById('scr-jumbled').textContent;
+  showScrView('timesup');
+}
+ 
+function revealCorrectAnswer() {
+  scrUsedBoxes[scrDifficulty].add(scrCurrentBox);
+  scrScore++;
+  scrStreaks[scrDifficulty]++;
+  if (scrDifficulty === 'easy' && scrStreaks.easy >= 3) scrUnlocked.normal = true;
+  if (scrDifficulty === 'normal' && scrStreaks.normal >= 3) scrUnlocked.hard = true;
+  updateScrHeader();
+  launchConfetti(40);
+ 
+  document.getElementById('scr-answer-icon').textContent = '🎉';
+  document.getElementById('scr-answer-title').textContent = 'Great Job!';
+  document.getElementById('scr-answer-sub').textContent = '+1 point! The correct word is:';
+  document.getElementById('scr-answer-word').textContent = scrCurrentWord;
+  document.getElementById('scr-answer-word').style.color = 'var(--green)';
+  document.getElementById('scr-answer-hint').innerHTML = `<strong>💡 Hint:</strong> ${getHint(scrCurrentWord)}`;
+  document.getElementById('scr-continue-btn').textContent = '↩ Back to Difficulty Selection';
+ 
+  showScrView('answer');
+}
+ 
+function tryAgainPressed() {
+  scrUsedBoxes[scrDifficulty].add(scrCurrentBox);
+  scrStreaks[scrDifficulty] = 0;
+  updateScrHeader();
+ 
+  document.getElementById('scr-answer-icon').textContent = '😢';
+  document.getElementById('scr-answer-title').textContent = 'Nice Try!';
+  document.getElementById('scr-answer-sub').textContent = 'No point awarded this round. The correct word was:';
+  document.getElementById('scr-answer-word').textContent = scrCurrentWord;
+  document.getElementById('scr-answer-word').style.color = 'var(--red)';
+  document.getElementById('scr-answer-hint').innerHTML = `<strong>💡 Hint:</strong> ${getHint(scrCurrentWord)}`;
+  document.getElementById('scr-continue-btn').textContent = '↩ Back to Difficulty Selection';
+ 
+  showScrView('answer');
+}
+ 
+function afterScrRound() {
+  showScrDifficulty();
+}
+ 
+function showScrView(view) {
+  ['instructions','difficulty','board','question','timesup','answer'].forEach(v => {
+    const el = document.getElementById(`scr-${v}`);
+    if (el) el.style.display = v === view ? 'flex' : 'none';
+  });
+}
+ 
+// ==========================================
+//  TRUE OR FALSE GAME
+// ==========================================
+function startTOF() {
+  tofTries = 0;
+  tofScore = 0;
+  tofUsedBoxes = new Set();
+  showScreen('tof');
+  document.getElementById('tof-instructions').style.display = 'flex';
+  document.getElementById('tof-board').style.display = 'none';
+  document.getElementById('tof-question').style.display = 'none';
+  document.getElementById('tof-final').style.display = 'none';
+  updateTOFHeader();
+}
+ 
+function startTOFGame() {
+  document.getElementById('tof-instructions').style.display = 'none';
+  buildTOFBoard();
+}
+ 
+function buildTOFBoard() {
+  const grid = document.getElementById('tof-boxes');
+  grid.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'tof-box' + (tofUsedBoxes.has(i) ? ' used' : '');
+    btn.textContent = i + 1;
+    btn.onclick = () => openTOFQuestion(i);
+    grid.appendChild(btn);
+  }
+  document.getElementById('tof-board').style.display = 'flex';
+  document.getElementById('tof-question').style.display = 'none';
+  document.getElementById('tof-final').style.display = 'none';
+}
+ 
+function updateTOFHeader() {
+  document.getElementById('tof-score-disp').textContent = tofScore;
+  document.getElementById('tof-tries-disp').textContent = tofTries;
+}
+ 
+function openTOFQuestion(idx) {
+  tofCurrentQ = idx;
+  document.getElementById('tof-board').style.display = 'none';
+  readySetGo(() => {
+    const q = TOF_QUESTIONS[idx];
+    document.getElementById('tof-q-num').textContent = `Q${idx + 1} of 20`;
+    document.getElementById('tof-q-text').textContent = q.q;
+    document.getElementById('tof-question').style.display = 'flex';
+    startTOFTimer();
+  });
+}
+ 
+function startTOFTimer(secs = 10) {
+  clearTOFTimer();
+  let t = secs;
+  const el = document.getElementById('tof-timer');
+  el.textContent = t;
+  el.className = 'timer-count';
+  tofTimer = setInterval(() => {
+    t--;
+    el.textContent = t;
+    if (t <= 3) el.className = 'timer-count urgent';
+    if (t <= 0) {
+      clearInterval(tofTimer);
+      answerTOF(null);
+    }
+  }, 1000);
+}
+function clearTOFTimer() { if (tofTimer) { clearInterval(tofTimer); tofTimer = null; } }
+ 
+function answerTOF(userAnswer) {
+  clearTOFTimer();
+  tofUsedBoxes.add(tofCurrentQ);
+  tofTries++;
+  const q = TOF_QUESTIONS[tofCurrentQ];
+  const timeUp = userAnswer === null;
+  const correct = !timeUp && userAnswer === q.a;
+  if (correct) { tofScore++; launchConfetti(35); }
+  updateTOFHeader();
+ 
+  const isLast = tofTries >= 3;
+ 
+  const nextBtn = {
+    label: isLast ? '➡ See Final Score' : '↩ Back to Board',
+    cls: '',
+    action: () => {
+      hideResult();
+      if (isLast) { showTOFFinal(); return; }
+      buildTOFBoard();
+    }
+  };
+ 
+  showResult({
+    icon: timeUp ? '⏰' : correct ? '🎉' : '😢',
+    title: timeUp ? "Time's Up!" : correct ? 'Correct!' : 'Oops!',
+    titleClass: correct ? 'correct' : 'wrong',
+    sub: timeUp ? "You ran out of time!" : correct ? 'Nice one!' : "No worries—let's learn it!",
+    question: q.q,
+    showAnswer: true,
+    answerText: `Correct answer: ${q.a ? 'TRUE' : 'FALSE'}`,
+    detail: q.detail,
+    showPoints: correct,
+    buttons: [nextBtn]
+  });
+}
+ 
+function showTOFFinal() {
+  document.getElementById('tof-final-name').textContent = playerName;
+  document.getElementById('tof-final-score').textContent = tofScore;
+  document.getElementById('tof-board').style.display = 'none';
+  document.getElementById('tof-question').style.display = 'none';
+  document.getElementById('tof-final').style.display = 'flex';
+  launchConfetti(60);
+  flashScreen();
+}
+ 
+// ==========================================
+//  MEMORY MATCH GAME (Set A-E)
+// ==========================================
+function startMatching() {
+  showScreen('matching');
+  document.getElementById('match-instructions').style.display = 'flex';
+  document.getElementById('match-set-select').style.display = 'none';
+  document.getElementById('match-preview').style.display = 'none';
+  document.getElementById('match-board').style.display = 'none';
+  document.getElementById('match-final').style.display = 'none';
+}
+ 
+function showSetSelection() {
+  document.getElementById('match-instructions').style.display = 'none';
+  document.getElementById('match-preview').style.display = 'none';
+  document.getElementById('match-final').style.display = 'none';
+  document.getElementById('match-set-select').style.display = 'flex';
+ 
+  const row = document.getElementById('set-row');
+  row.innerHTML = '';
+  ['A','B','C','D','E'].forEach(setKey => {
+    const card = document.createElement('div');
+    card.className = 'set-card';
+    card.innerHTML = `<div class="s-icon">📦</div><div class="s-title">Set ${setKey}</div><div class="s-sub">5 pairs</div>`;
+    card.onclick = () => selectMemorySet(setKey);
+    row.appendChild(card);
+  });
+}
+ 
+function selectMemorySet(setKey) {
+  currentMemorySet = setKey;
+  showMatchPreview();
+}
+ 
+function showMatchPreview() {
+  document.getElementById('match-set-select').style.display = 'none';
+  document.getElementById('match-preview').style.display = 'flex';
+  const rowsDiv = document.getElementById('preview-rows');
+  rowsDiv.innerHTML = '';
+  const pairs = MEMORY_SETS[currentMemorySet];
+  pairs.forEach((pair, i) => {
+    const row = document.createElement('div');
+    row.className = 'preview-pair-row';
+    row.style.animationDelay = (i * 0.1) + 's';
+    row.innerHTML = `<span class="pp-food">${pair.food}</span><span class="pp-arrow">↔</span><span class="pp-benefit">${pair.benefit}</span>`;
+    rowsDiv.appendChild(row);
+  });
+}
+ 
+function beginReadySetGoForMemory() {
+  readySetGo(startMatchingGame);
+}
+ 
+function startMatchingGame() {
+  document.getElementById('match-instructions').style.display = 'none';
+  document.getElementById('match-set-select').style.display = 'none';
+  document.getElementById('match-preview').style.display = 'none';
+  document.getElementById('match-final').style.display = 'none';
+  document.getElementById('match-board').style.display = 'flex';
+ 
+  memoryMatchedCount = 0;
+  memoryFlipped = [];
+  memoryLock = false;
+  memoryTimeLeft = 60;
+  document.getElementById('memory-matches').textContent = '0/5';
+  document.getElementById('match-score').textContent = '0';
+  document.getElementById('memory-timer').textContent = '1:00';
+  document.getElementById('memory-timer').className = 'mp-value';
+ 
+  buildMemoryCards();
+  renderMemoryGrid();
+  startMemoryTimer();
+}
+ 
+function buildMemoryCards() {
+  let cards = [];
+  const pairs = MEMORY_SETS[currentMemorySet];
+  pairs.forEach((pair, i) => {
+    cards.push({ id: 'food-' + i, pairId: i, type: 'food', label: pair.food });
+    cards.push({ id: 'benefit-' + i, pairId: i, type: 'benefit', label: pair.benefit });
+  });
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  memoryCards = cards;
+}
+ 
+function renderMemoryGrid() {
+  const grid = document.getElementById('memory-grid');
+  grid.innerHTML = '';
+  memoryCards.forEach((card, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'memory-card-btn mc-back';
+    btn.textContent = '❓';
+    btn.dataset.idx = idx;
+    btn.onclick = () => flipMemoryCard(idx, btn);
+    grid.appendChild(btn);
+  });
+}
+ 
+function flipMemoryCard(idx, btn) {
+  if (memoryLock) return;
+  if (btn.classList.contains('mc-matched')) return;
+  if (memoryFlipped.some(f => f.idx === idx)) return;
+  if (memoryFlipped.length >= 2) return;
+ 
+  const card = memoryCards[idx];
+  btn.className = 'memory-card-btn mc-front';
+  btn.textContent = card.label;
+  memoryFlipped.push({ idx, btn });
+ 
+  if (memoryFlipped.length === 2) {
+    memoryLock = true;
+    const [first, second] = memoryFlipped;
+    const cardA = memoryCards[first.idx];
+    const cardB = memoryCards[second.idx];
+    const isMatch = cardA.pairId === cardB.pairId && cardA.type !== cardB.type;
+ 
+    setTimeout(() => {
+      if (isMatch) {
+        first.btn.className = 'memory-card-btn mc-front mc-matched';
+        second.btn.className = 'memory-card-btn mc-front mc-matched';
+        memoryMatchedCount++;
+        document.getElementById('memory-matches').textContent = `${memoryMatchedCount}/5`;
+        document.getElementById('match-score').textContent = memoryMatchedCount;
+        launchConfetti(20);
+        memoryFlipped = [];
+        memoryLock = false;
+ 
+        if (memoryMatchedCount === 5) finishMemoryGame(true);
+      } else {
+        first.btn.classList.add('mc-wrong');
+        second.btn.classList.add('mc-wrong');
+        setTimeout(() => {
+          memoryFlipped.forEach(f => {
+            f.btn.className = 'memory-card-btn mc-back';
+            f.btn.textContent = '❓';
+          });
+          memoryFlipped = [];
+          memoryLock = false;
+        }, 700);
+      }
+    }, 600);
+  }
+}
+ 
+function startMemoryTimer() {
+  clearMemoryTimer();
+  updateMemoryTimerDisplay();
+  memoryTimer = setInterval(() => {
+    memoryTimeLeft--;
+    updateMemoryTimerDisplay();
+    if (memoryTimeLeft <= 0) {
+      clearInterval(memoryTimer);
+      finishMemoryGame(false);
+    }
+  }, 1000);
+}
+function clearMemoryTimer() { if (memoryTimer) { clearInterval(memoryTimer); memoryTimer = null; } }
+ 
+function updateMemoryTimerDisplay() {
+  const m = Math.floor(memoryTimeLeft / 60);
+  const s = memoryTimeLeft % 60;
+  const el = document.getElementById('memory-timer');
+  el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  el.className = 'mp-value' + (memoryTimeLeft <= 10 ? ' timer-low' : '');
+}
+ 
+function finishMemoryGame(success) {
+  clearMemoryTimer();
+  memoryLock = true;
+  const timeUsed = 60 - memoryTimeLeft;
+  const m = Math.floor(timeUsed / 60);
+  const s = timeUsed % 60;
+ 
+  document.getElementById('match-final-name').textContent = playerName;
+  document.getElementById('match-final-icon').textContent = success ? '🏆' : '⏰';
+  document.getElementById('match-final-label').textContent = success ? 'Time Used' : "Time's Up!";
+  document.getElementById('match-final-time').textContent = success ? `${m}:${s.toString().padStart(2,'0')}` : `${memoryMatchedCount}/5 matched`;
+  document.getElementById('match-final-msg').textContent = success
+    ? `🎉 Congratulations, ${playerName}! You matched all 5 pairs in Set ${currentMemorySet}!`
+    : `Time ran out! ${playerName} matched ${memoryMatchedCount} out of 5 pairs in Set ${currentMemorySet}.`;
+ 
+  document.getElementById('match-board').style.display = 'none';
+  document.getElementById('match-final').style.display = 'flex';
+ 
+  if (success) { launchConfetti(80); flashScreen(); }
+}
+ 
+// ==========================================
+//  UTILITIES
+// ==========================================
+function clearAllTimers() {
+  clearScrTimer();
+  clearTOFTimer();
+  clearMemoryTimer();
+}
+ 
+document.getElementById('player-name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitPlayerName();
+});
+ 
+// ==========================================
+//  INIT
+// ==========================================
+createParticles();
+showScreen('name-entry');
+</script>
+</body>
+</html>
