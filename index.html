@@ -48,7 +48,10 @@
   .screen.active { display: flex; flex-direction: column; }
  
   /* ===== HOME SCREEN ===== */
-  #home { background: linear-gradient(135deg, #1a5c32 0%, #2d8b4e 40%, #1a5c32 100%); position: relative; overflow: hidden; align-items: center; justify-content: center; padding: 20px; }
+  #home, #start-screen { background: linear-gradient(135deg, #1a5c32 0%, #2d8b4e 40%, #1a5c32 100%); position: relative; overflow: hidden; align-items: center; justify-content: center; padding: 20px; }
+  .btn-quit { background: rgba(0,0,0,0.35); border: 2px solid rgba(0,0,0,0.5); color: white; padding: 8px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif; }
+  .btn-quit:hover { background: rgba(0,0,0,0.55); border-color: #fff; }
+  .start-btn-row { margin-top: 28px; }
   .food-particle { position: absolute; font-size: 2rem; animation: float 3s ease-in-out infinite; opacity: 0.35; pointer-events: none; user-select: none; }
   .home-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.04); }
   .home-content { position: relative; z-index: 2; text-align: center; max-width: 700px; width: 100%; }
@@ -161,11 +164,19 @@
   .diff-card .d-streak { margin-top:10px; font-size: 0.72rem; font-weight: 800; color: var(--green); }
   .diff-card.locked { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
  
-  .box-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; max-width: 560px; width: 100%; animation: slide-up 0.5s ease; }
-  .box-btn { aspect-ratio: 1; border-radius: 20px; border: 3px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-family: 'Fredoka One', cursive; font-size: 1.8rem; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
-  .box-btn:hover:not(.used) { transform: scale(1.08) rotate(2deg); background: rgba(255,255,255,0.25); border-color: var(--yellow); box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: wiggle 0.4s ease; }
-  .box-btn.used { opacity: 0.3; cursor: not-allowed; pointer-events: none; transform: scale(0.9); }
-  .box-btn .box-num { font-size: 0.9rem; position: absolute; top: 6px; left: 10px; opacity: 0.7; }
+  /* Box grid sized via JS (columns/rows) to always fit on one screen, no scrolling */
+  .box-grid { display: grid; gap: 10px; max-width: 960px; width: 100%; flex: 1 1 auto; min-height: 0; animation: slide-up 0.5s ease; }
+  .box-btn { width: 100%; height: 100%; border-radius: 14px; border: 3px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: white; font-family: 'Fredoka One', cursive; font-size: clamp(0.75rem, 1.8vw, 1.6rem); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+  .box-btn:hover:not(.used) { transform: scale(1.05); background: rgba(255,255,255,0.25); border-color: var(--yellow); box-shadow: 0 8px 22px rgba(0,0,0,0.3); }
+  .box-btn.used { opacity: 0.3; cursor: not-allowed; pointer-events: none; transform: scale(0.92); }
+  .box-btn .box-num { font-size: 0.62em; position: absolute; top: 4px; left: 6px; opacity: 0.7; }
+ 
+  /* While the box-selection board is shown, lock the screen to exactly one viewport — no scrolling */
+  #scramble.board-fixed { height: 100vh; overflow: hidden; }
+  #scramble.board-fixed .game-body { overflow: hidden; }
+  #scr-board { padding: 12px 18px; gap: 8px; }
+  #scr-board > div:first-child { flex-shrink: 0; }
+  #scr-board > button { flex-shrink: 0; padding: 10px 26px; font-size: 0.9rem; }
  
   .scramble-board { background: white; border-radius: 28px; padding: 32px; max-width: 540px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.15); animation: bounce-in 0.5s ease; }
   .round-label { display: inline-block; background: var(--green); color: white; font-weight: 800; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; padding: 5px 18px; border-radius: 50px; margin-bottom: 14px; }
@@ -188,6 +199,8 @@
   .tof-box { aspect-ratio: 1; border-radius: 16px; background: var(--green); color: white; font-family: 'Fredoka One', cursive; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s; box-shadow: 0 4px 14px rgba(45,139,78,0.35); position: relative; overflow: hidden; }
   .tof-box:hover:not(.used) { transform: scale(1.1) rotate(-2deg); box-shadow: 0 10px 28px rgba(45,139,78,0.5); background: var(--green-light); }
   .tof-box.used { opacity: 0.3; cursor: not-allowed; pointer-events: none; transform: scale(0.9); }
+  .tof-box.correct { background: var(--green); }
+  .tof-box.wrong { background: var(--red); }
  
   .tof-question-card { background: white; border-radius: 28px; padding: 36px 32px; max-width: 540px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.12); animation: bounce-in 0.5s ease; }
   .tof-q-num { display: inline-block; background: var(--yellow); color: var(--green-dark); font-weight: 900; font-size: 0.85rem; padding: 4px 16px; border-radius: 50px; margin-bottom: 16px; letter-spacing: 1px; }
@@ -225,10 +238,10 @@
   .memory-pill .mp-value { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--orange); }
   .memory-pill .mp-value.timer-low { color: var(--red); animation: timer-pulse 0.5s ease infinite; }
  
-  .memory-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 600px; width: 100%; animation: slide-up 0.5s ease; }
-  .memory-card-btn { aspect-ratio: 0.85; border-radius: 16px; cursor: pointer; border: none; display:flex; align-items:center; justify-content:center; text-align:center; padding: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); font-weight: 800; transition: background 0.2s; }
-  .mc-back { background: linear-gradient(135deg, var(--orange), #fb923c); color:white; font-size: 1.8rem; }
-  .mc-front { background: white; color:#333; font-size: 0.74rem; border: 2px solid #fed7aa; line-height:1.25; }
+  .memory-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; max-width: 660px; width: 100%; animation: slide-up 0.5s ease; }
+  .memory-card-btn { aspect-ratio: 1; border-radius: 18px; cursor: pointer; border: none; display:flex; align-items:center; justify-content:center; text-align:center; padding: 10px; box-shadow: 0 5px 16px rgba(0,0,0,0.15); font-weight: 800; transition: background 0.2s; }
+  .mc-back { background: linear-gradient(135deg, var(--orange), #fb923c); color:white; font-size: 2.3rem; }
+  .mc-front { background: white; color:#333; font-size: 0.92rem; border: 2px solid #fed7aa; line-height:1.3; }
   .mc-matched { background: linear-gradient(135deg, #ecfdf5, #d1fae5) !important; border-color: #22c55e !important; color: var(--green) !important; cursor: default; opacity: 0.7; }
   .mc-wrong { background: #fee2e2 !important; border-color: var(--red) !important; animation: shake 0.4s ease; }
  
@@ -242,7 +255,7 @@
     .game-card { width: 100%; max-width: 280px; }
     .box-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
     .tof-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .difficulty-row { flex-direction: column; align-items: center; }
     .diff-card { width: 100%; max-width: 260px; }
     .set-row { flex-direction: column; align-items: center; }
@@ -254,8 +267,23 @@
  
 <div id="particles"></div>
  
+<!-- ============ START SCREEN (FIRST VIEW) ============ -->
+<div id="start-screen" class="screen active">
+  <div class="home-circle" style="width:600px;height:600px;top:-200px;left:-150px;"></div>
+  <div class="home-circle" style="width:400px;height:400px;bottom:-100px;right:-100px;"></div>
+  <div class="home-content">
+    <div class="home-badge">🇵🇭 July 2026 — Nutrition Month</div>
+    <div class="home-title">NUTRISYON<br><span>MONTH</span> 🥦</div>
+    <div class="home-subtitle">Nutrisyon sa Kalikasan, Ating Pangalagaan!</div>
+    <div class="home-tagline">Tap Start to begin — the game will open in fullscreen automatically.</div>
+    <div class="start-btn-row">
+      <button class="big-btn yellow" style="font-size:1.2rem;padding:16px 52px;" onclick="startApp()">▶ START</button>
+    </div>
+  </div>
+</div>
+ 
 <!-- ============ NAME ENTRY SCREEN ============ -->
-<div id="name-entry" class="screen active">
+<div id="name-entry" class="screen">
   <div class="name-card">
     <div class="emoji-row">🥦🍎🥕</div>
     <h1>Welcome, Champion!</h1>
@@ -298,8 +326,9 @@
       </div>
     </div>
  
-    <div style="margin-top:30px;">
+    <div style="margin-top:30px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <button class="btn-reset" onclick="confirmReset()">🔄 RESET GAME</button>
+      <button class="btn-quit" onclick="confirmQuit()">🚪 QUIT</button>
     </div>
   </div>
 </div>
@@ -309,10 +338,10 @@
   <div class="game-header">
     <div>
       <div class="game-header-title">🔤 Word Scramble</div>
-      <div class="game-header-sub">Pick a difficulty — unscramble the nutrition word!</div>
+      <div class="game-header-sub">Pick any difficulty — unscramble the nutrition word!</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <span class="score-badge">⭐ <span id="scr-score-disp">0</span> pts</span>
+      <span class="score-badge">⭐ <span id="scr-score-disp">0</span> pts | Try <span id="scr-tries-disp">0</span>/3</span>
       <button class="btn-reset" onclick="confirmReset()">RESET</button>
       <button class="btn-home" onclick="confirmGoHome()">🏠 Home</button>
     </div>
@@ -324,11 +353,11 @@
       <div class="instructions-title">📋 How to Play</div>
       <div class="instruction-step">
         <div class="step-num">1</div>
-        <div class="step-text">Open the game board difficulty level (<strong>Easy, Normal, or Difficult</strong>).</div>
+        <div class="step-text">Choose any difficulty level — <strong>Easy, Normal, or Difficult</strong> — anytime you like, in any order.</div>
       </div>
       <div class="instruction-step">
         <div class="step-num">2</div>
-        <div class="step-text">To move up, players need to get <strong>three correct words in a row</strong> for each category. After that, they can decide if they want to keep going all the way to the top level.</div>
+        <div class="step-text">You have <strong>3 tries total</strong> for the whole game, so choose wisely and aim for your best score!</div>
       </div>
       <div class="instruction-step">
         <div class="step-num">3</div>
@@ -350,7 +379,7 @@
       </div>
       <div class="instruction-step">
         <div class="step-num">6</div>
-        <div class="step-text">The player will be <strong>eliminated</strong> if their guessed answer is incorrect.</div>
+        <div class="step-text">Each try earns <strong>1 point</strong> if correct. After 3 tries, your final score will be shown.</div>
       </div>
       <div style="text-align:center;margin-top:20px;">
         <button class="big-btn" style="background:#f97316;box-shadow:0 6px 20px rgba(249,115,22,0.4);" onclick="showScrDifficulty()">▶ CHOOSE DIFFICULTY</button>
@@ -362,39 +391,42 @@
   <div id="scr-difficulty" class="game-body scramble-board-screen" style="display:none;">
     <div style="text-align:center;color:white;animation:slide-down 0.5s ease;">
       <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;">Choose Difficulty</div>
-      <div style="font-size:0.9rem;opacity:0.8;">Get 3 in a row to unlock the next level!</div>
+      <div style="font-size:0.9rem;opacity:0.8;">Pick any level, anytime — you have 3 tries total!</div>
     </div>
     <div class="difficulty-row">
       <div class="diff-card easy" onclick="enterDifficulty('easy')">
         <div class="d-icon">🟢</div>
         <div class="d-title">Easy</div>
         <div class="d-sub">5-letter words • 5 secs</div>
-        <div class="d-streak">Streak: <span id="streak-easy-disp">0</span>/3</div>
       </div>
       <div class="diff-card normal" id="diff-normal-card" onclick="enterDifficulty('normal')">
         <div class="d-icon">🟡</div>
         <div class="d-title">Normal</div>
         <div class="d-sub">6-letter words • 7 secs</div>
-        <div class="d-streak">Streak: <span id="streak-normal-disp">0</span>/3</div>
       </div>
       <div class="diff-card hard" id="diff-hard-card" onclick="enterDifficulty('hard')">
         <div class="d-icon">🔴</div>
         <div class="d-title">Difficult</div>
         <div class="d-sub">7+ letter words • 10 secs</div>
-        <div class="d-streak">Streak: <span id="streak-hard-disp">0</span>/3</div>
       </div>
     </div>
-    <div class="memory-pill" style="margin-top:6px;">
-      <div class="mp-label">Overall Points</div>
-      <div class="mp-value" id="scr-diff-score-disp">0</div>
+    <div class="memory-meta">
+      <div class="memory-pill">
+        <div class="mp-label">Overall Points</div>
+        <div class="mp-value" id="scr-diff-score-disp">0</div>
+      </div>
+      <div class="memory-pill">
+        <div class="mp-label">Tries Left</div>
+        <div class="mp-value" id="scr-diff-tries-disp">3</div>
+      </div>
     </div>
   </div>
  
   <!-- Board view (boxes) -->
   <div id="scr-board" class="game-body scramble-board-screen" style="display:none;">
     <div style="text-align:center;color:white;animation:slide-down 0.5s ease;">
-      <div style="font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:6px;" id="scr-board-title">EASY — Choose Your Box!</div>
-      <div style="font-size:0.9rem;opacity:0.8;">Pick any numbered box to reveal your scrambled word</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:1.3rem;margin-bottom:2px;" id="scr-board-title">EASY — Choose Your Box!</div>
+      <div style="font-size:0.78rem;opacity:0.8;">Pick any numbered box to reveal your scrambled word</div>
     </div>
     <div class="box-grid" id="scr-boxes"></div>
     <button class="big-btn gray" onclick="backToScrDifficulty()">↩ Change Difficulty</button>
@@ -439,6 +471,18 @@
       <div class="answer-word" id="scr-answer-word">PROTEIN</div>
       <div class="scramble-hint" id="scr-answer-hint"><strong>💡 Hint:</strong> Builds and repairs the body.</div>
       <button class="big-btn" onclick="afterScrRound()" style="margin-top:14px;" id="scr-continue-btn">↩ Back to Difficulty Selection</button>
+    </div>
+  </div>
+ 
+  <!-- Final score view -->
+  <div id="scr-final" class="game-body" style="display:none;">
+    <div class="final-score-card">
+      <div style="font-size:3rem;">🏆</div>
+      <div class="final-player-name" id="scr-final-name">Player Name</div>
+      <div style="color:#888;font-weight:700;margin-top:4px;">Final Score</div>
+      <div class="final-score-num" id="scr-final-score">0</div>
+      <div style="color:#666;font-weight:600;margin-bottom:20px;">out of 3 tries used</div>
+      <button class="big-btn yellow" onclick="goHomeDirect()">🏠 Back to Home</button>
     </div>
   </div>
 </div>
@@ -748,9 +792,8 @@ const MEMORY_SETS = {
 let playerName = '';
  
 let scrScore = 0;
+let scrTries = 0;
 let scrDifficulty = 'easy';
-let scrStreaks = { easy: 0, normal: 0, hard: 0 };
-let scrUnlocked = { easy: true, normal: false, hard: false };
 let scrUsedBoxes = { easy: new Set(), normal: new Set(), hard: new Set() };
 let scrCurrentBox = -1;
 let scrTimer = null;
@@ -758,6 +801,7 @@ let scrCurrentWord = '';
  
 let tofTries = 0, tofScore = 0, tofCurrentQ = -1, tofTimer = null;
 let tofUsedBoxes = new Set();
+let tofBoxResults = {};
  
 let currentMemorySet = 'A';
 let memoryTimer = null, memoryTimeLeft = 60, memoryCards = [], memoryFlipped = [], memoryMatchedCount = 0, memoryLock = false;
@@ -831,25 +875,74 @@ function confirmReset() {
   document.getElementById('confirm-overlay').style.display = 'flex';
 }
  
+function confirmQuit() {
+  document.getElementById('confirm-icon').textContent = '🚪';
+  document.getElementById('confirm-text').innerHTML = `Quit the game, <span id="confirm-name">${escapeHtml(playerName)}</span>? This will exit fullscreen and return to the Start screen.`;
+  const yesBtn = document.getElementById('confirm-yes-btn');
+  yesBtn.textContent = 'Yes, Quit';
+  yesBtn.className = 'big-btn red';
+  yesBtn.onclick = () => { hideConfirm(); doQuitGame(); };
+  document.getElementById('confirm-overlay').style.display = 'flex';
+}
+ 
 function hideConfirm() {
   document.getElementById('confirm-overlay').style.display = 'none';
 }
  
-function doFullReset() {
+function resetAllGameState() {
   clearAllTimers();
   playerName = '';
-  scrScore = 0; scrCurrentBox = -1;
+  scrScore = 0; scrTries = 0; scrCurrentBox = -1;
   scrDifficulty = 'easy';
-  scrStreaks = { easy: 0, normal: 0, hard: 0 };
-  scrUnlocked = { easy: true, normal: false, hard: false };
   scrUsedBoxes = { easy: new Set(), normal: new Set(), hard: new Set() };
   tofTries = 0; tofScore = 0; tofCurrentQ = -1;
   tofUsedBoxes = new Set();
+  tofBoxResults = {};
   currentMemorySet = 'A';
   memoryTimeLeft = 60; memoryFlipped = []; memoryMatchedCount = 0; memoryLock = false;
- 
   document.getElementById('player-name-input').value = '';
+}
+ 
+function doFullReset() {
+  resetAllGameState();
   showScreen('name-entry');
+}
+ 
+function doQuitGame() {
+  resetAllGameState();
+  exitFullscreenSafe();
+  showScreen('start-screen');
+}
+ 
+// ==========================================
+//  FULLSCREEN HELPERS
+// ==========================================
+function requestFullscreenSafe() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if (req) {
+    try {
+      const result = req.call(el);
+      if (result && result.catch) result.catch(() => {});
+    } catch (e) { /* fullscreen not available — continue without blocking the game */ }
+  }
+}
+ 
+function exitFullscreenSafe() {
+  const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+  const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  if (isFs && exit) {
+    try {
+      const result = exit.call(document);
+      if (result && result.catch) result.catch(() => {});
+    } catch (e) { /* ignore */ }
+  }
+}
+ 
+function startApp() {
+  requestFullscreenSafe();
+  showScreen('name-entry');
+  createParticles();
 }
  
 function escapeHtml(str) {
@@ -965,8 +1058,7 @@ function scramble(word) {
  
 function startScramble() {
   scrScore = 0;
-  scrStreaks = { easy: 0, normal: 0, hard: 0 };
-  scrUnlocked = { easy: true, normal: false, hard: false };
+  scrTries = 0;
   scrUsedBoxes = { easy: new Set(), normal: new Set(), hard: new Set() };
   showScreen('scramble');
   showScrView('instructions');
@@ -979,18 +1071,11 @@ function showScrDifficulty() {
 }
  
 function renderDifficultyCards() {
-  document.getElementById('streak-easy-disp').textContent = scrStreaks.easy;
-  document.getElementById('streak-normal-disp').textContent = scrStreaks.normal;
-  document.getElementById('streak-hard-disp').textContent = scrStreaks.hard;
   document.getElementById('scr-diff-score-disp').textContent = scrScore;
- 
-  document.getElementById('diff-normal-card').classList.toggle('locked', !scrUnlocked.normal);
-  document.getElementById('diff-hard-card').classList.toggle('locked', !scrUnlocked.hard);
+  document.getElementById('scr-diff-tries-disp').textContent = Math.max(0, 3 - scrTries);
 }
  
 function enterDifficulty(level) {
-  if (level === 'normal' && !scrUnlocked.normal) return;
-  if (level === 'hard' && !scrUnlocked.hard) return;
   scrDifficulty = level;
   buildScrBoard();
   showScrView('board');
@@ -998,11 +1083,23 @@ function enterDifficulty(level) {
  
 function backToScrDifficulty() { showScrDifficulty(); }
  
+function computeBoxGridDims(count) {
+  // Aim for a wide grid (screens are usually landscape) sized so every box fits in one viewport.
+  let cols = Math.ceil(Math.sqrt(count * 1.7));
+  const maxCols = window.innerWidth < 480 ? 6 : 10;
+  cols = Math.max(4, Math.min(cols, maxCols));
+  const rows = Math.ceil(count / cols);
+  return { cols, rows };
+}
+ 
 function buildScrBoard() {
   document.getElementById('scr-board-title').textContent = `${DIFF_LABELS[scrDifficulty]} — Choose Your Box!`;
   const grid = document.getElementById('scr-boxes');
   grid.innerHTML = '';
   const bank = SCRAMBLE_FINAL[scrDifficulty];
+  const { cols, rows } = computeBoxGridDims(bank.length);
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
   for (let i = 0; i < bank.length; i++) {
     const btn = document.createElement('button');
     const used = scrUsedBoxes[scrDifficulty].has(i);
@@ -1015,6 +1112,7 @@ function buildScrBoard() {
  
 function updateScrHeader() {
   document.getElementById('scr-score-disp').textContent = scrScore;
+  document.getElementById('scr-tries-disp').textContent = scrTries;
 }
  
 function openScrBox(idx) {
@@ -1057,9 +1155,7 @@ function showTimesUp() {
 function revealCorrectAnswer() {
   scrUsedBoxes[scrDifficulty].add(scrCurrentBox);
   scrScore++;
-  scrStreaks[scrDifficulty]++;
-  if (scrDifficulty === 'easy' && scrStreaks.easy >= 3) scrUnlocked.normal = true;
-  if (scrDifficulty === 'normal' && scrStreaks.normal >= 3) scrUnlocked.hard = true;
+  scrTries++;
   updateScrHeader();
   launchConfetti(40);
  
@@ -1068,37 +1164,53 @@ function revealCorrectAnswer() {
   document.getElementById('scr-answer-sub').textContent = '+1 point! The correct word is:';
   document.getElementById('scr-answer-word').textContent = scrCurrentWord;
   document.getElementById('scr-answer-word').style.color = 'var(--green)';
+  document.getElementById('scr-answer-word').style.display = 'block';
   document.getElementById('scr-answer-hint').innerHTML = `<strong>💡 Hint:</strong> ${getHint(scrCurrentWord)}`;
-  document.getElementById('scr-continue-btn').textContent = '↩ Back to Difficulty Selection';
+  document.getElementById('scr-answer-hint').style.display = 'block';
+  document.getElementById('scr-continue-btn').textContent = scrTries >= 3 ? '➡ See Final Score' : '↩ Back to Difficulty Selection';
  
   showScrView('answer');
 }
  
 function tryAgainPressed() {
   scrUsedBoxes[scrDifficulty].add(scrCurrentBox);
-  scrStreaks[scrDifficulty] = 0;
+  scrTries++;
   updateScrHeader();
  
   document.getElementById('scr-answer-icon').textContent = '😢';
   document.getElementById('scr-answer-title').textContent = 'Nice Try!';
-  document.getElementById('scr-answer-sub').textContent = 'No point awarded this round. The correct word was:';
-  document.getElementById('scr-answer-word').textContent = scrCurrentWord;
-  document.getElementById('scr-answer-word').style.color = 'var(--red)';
-  document.getElementById('scr-answer-hint').innerHTML = `<strong>💡 Hint:</strong> ${getHint(scrCurrentWord)}`;
-  document.getElementById('scr-continue-btn').textContent = '↩ Back to Difficulty Selection';
+  document.getElementById('scr-answer-sub').textContent = 'No point awarded this round. The correct word stays a secret!';
+  document.getElementById('scr-answer-word').textContent = '';
+  document.getElementById('scr-answer-word').style.display = 'none';
+  document.getElementById('scr-answer-hint').innerHTML = '';
+  document.getElementById('scr-answer-hint').style.display = 'none';
+  document.getElementById('scr-continue-btn').textContent = scrTries >= 3 ? '➡ See Final Score' : '↩ Back to Difficulty Selection';
  
   showScrView('answer');
 }
  
 function afterScrRound() {
-  showScrDifficulty();
+  if (scrTries >= 3) {
+    showScrFinal();
+  } else {
+    showScrDifficulty();
+  }
+}
+ 
+function showScrFinal() {
+  document.getElementById('scr-final-name').textContent = playerName;
+  document.getElementById('scr-final-score').textContent = scrScore;
+  showScrView('final');
+  launchConfetti(60);
+  flashScreen();
 }
  
 function showScrView(view) {
-  ['instructions','difficulty','board','question','timesup','answer'].forEach(v => {
+  ['instructions','difficulty','board','question','timesup','answer','final'].forEach(v => {
     const el = document.getElementById(`scr-${v}`);
     if (el) el.style.display = v === view ? 'flex' : 'none';
   });
+  document.getElementById('scramble').classList.toggle('board-fixed', view === 'board');
 }
  
 // ==========================================
@@ -1108,6 +1220,7 @@ function startTOF() {
   tofTries = 0;
   tofScore = 0;
   tofUsedBoxes = new Set();
+  tofBoxResults = {};
   showScreen('tof');
   document.getElementById('tof-instructions').style.display = 'flex';
   document.getElementById('tof-board').style.display = 'none';
@@ -1126,7 +1239,12 @@ function buildTOFBoard() {
   grid.innerHTML = '';
   for (let i = 0; i < 20; i++) {
     const btn = document.createElement('button');
-    btn.className = 'tof-box' + (tofUsedBoxes.has(i) ? ' used' : '');
+    let cls = 'tof-box';
+    if (tofUsedBoxes.has(i)) {
+      cls += ' used';
+      cls += tofBoxResults[i] ? ' correct' : ' wrong';
+    }
+    btn.className = cls;
     btn.textContent = i + 1;
     btn.onclick = () => openTOFQuestion(i);
     grid.appendChild(btn);
@@ -1178,6 +1296,7 @@ function answerTOF(userAnswer) {
   const q = TOF_QUESTIONS[tofCurrentQ];
   const timeUp = userAnswer === null;
   const correct = !timeUp && userAnswer === q.a;
+  tofBoxResults[tofCurrentQ] = correct;
   if (correct) { tofScore++; launchConfetti(35); }
   updateTOFHeader();
  
@@ -1424,7 +1543,7 @@ document.getElementById('player-name-input').addEventListener('keydown', e => {
 //  INIT
 // ==========================================
 createParticles();
-showScreen('name-entry');
+showScreen('start-screen');
 </script>
 </body>
 </html>
